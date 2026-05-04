@@ -15,6 +15,9 @@ class Election(models.Model):
         Facilitator,
         on_delete=models.CASCADE
     )
+
+    available = models.BooleanField()
+
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
 

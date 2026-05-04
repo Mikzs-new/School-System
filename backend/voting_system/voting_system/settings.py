@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'candidates',
     'elections',
     'facilitators',
-    'regitrations',
+    'registrations',
     'schools',
     'students',
     'votes',

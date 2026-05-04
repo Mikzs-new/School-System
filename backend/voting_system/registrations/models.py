@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Registeration(models.Model):
+class Registration(models.Model):
     time_registered = models.DateTimeField(auto_created=True)
     name = models.CharField(max_length=255)
     school_id = models.IntegerField()

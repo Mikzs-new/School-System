@@ -3,9 +3,25 @@ from rest_framework import serializers
 from candidates.models import Candidate, Partylist
 from elections.models import Election, Position, CourseValidItem, YearLevelValidItem
 from facilitators.models import Facilitator
+from registrations.models import Registration
 from schools.models import School
-from students.models import Student, Course
+from students.models import Student, Course, Department
 from votes.models import Vote, VoteItem
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Registration
+        fields = '__all__'
+
+class RegistrationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Registration
+        fields = ['name','school_id','complete_address','email']
+    
+    def validate_school_id(self, value):
+        if Registration.objects.filter(school_id=value).exists():
+            raise serializers.ValidationError('Registration Already Exists')
+        return value
 
 class SchoolSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,12 +31,31 @@ class SchoolSerializer(serializers.ModelSerializer):
 class SchoolCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
-        exclude = ['id']
+        fields = ['name','school_id','complete_address','email']
     
     def validate_school_id(self, value):
         if School.objects.filter(school_id=value).exists():
             raise serializers.ValidationError('School Already Exists')
         return value
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = '__all__'
+
+class DepartmentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ['name','school']
+
+    def validate(self, data):
+        name = data.get('name')
+        school = data.get('school')
+
+        if Department.objects.filter(name=name, school=school).exists():
+            raise serializers.ValidationError('Department Already Exists')
+        
+        return data
 
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,7 +65,7 @@ class CourseSerializer(serializers.ModelSerializer):
 class CourseCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        exclude = ['id']
+        fields = ['name','school','department']
 
     def validate(self, data):
         name = data.get('name')
@@ -129,7 +164,6 @@ class YearLevelValidItemCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Election Valid Year Level Already Exists')
         return data
 
-
 class CandidateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Candidate
@@ -174,7 +208,7 @@ class ElectionSerializer(serializers.ModelSerializer):
 class ElectionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Election
-        fields = '__all__'
+        fields = ['name','description','school','created_by','available','start_datetime','end_datetime']
 
 class VoteItemSerializer(serializers.ModelSerializer):
     class Meta:
