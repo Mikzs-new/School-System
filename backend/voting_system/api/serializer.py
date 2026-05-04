@@ -15,7 +15,7 @@ class SchoolSerializer(serializers.ModelSerializer):
 class SchoolCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
-        fields = ['id']
+        exclude = ['id']
     
     def validate_school_id(self, value):
         if School.objects.filter(school_id=value).exists():
@@ -30,7 +30,7 @@ class CourseSerializer(serializers.ModelSerializer):
 class CourseCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ['name','school']
+        exclude = ['id']
 
     def validate(self, data):
         name = data.get('name')
@@ -111,12 +111,12 @@ class CourseValidItemCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Election Valid Course Already Exists')
         return data
 
-class YLValidItemSerializer(serializers.ModelSerializer):
+class YearLevelValidItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = YearLevelValidItem
         fields = '__all__'
 
-class YLValidItemCreateSerializer(serializers.ModelSerializer):
+class YearLevelValidItemCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = YearLevelValidItem
         fields = '__all__'
