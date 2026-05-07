@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Registration(models.Model):
     time_registered = models.DateTimeField(auto_created=True)
@@ -27,6 +28,11 @@ class School(models.Model):
         return self.name
     
 class Facilitator(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
+    )
+
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     school_staff_id = models.CharField(max_length=255)
@@ -65,6 +71,11 @@ class Course(models.Model):
         return self.name
 
 class Student(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
+    )
+
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     school_student_id = models.CharField(max_length=255)

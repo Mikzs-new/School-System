@@ -1,10 +1,20 @@
 from rest_framework.permissions import BasePermission
 
-
-class IsFacilitator(BasePermission):
+class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        return hasattr(request.user, 'facilitator')
+        return request.user.is_staff
 
-class IsStudent(BasePermission):
+class CanManageModel(BasePermission):
     def has_permission(self, request, view):
-        return hasattr(request.user, 'student')
+        user = request.user
+
+        return (
+            user.groups.filter(name='Facilitator').exists()
+            or
+            user.is_staff
+        )
+
+class CanVote(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.groups.filter(name='Student').exists()
+    
