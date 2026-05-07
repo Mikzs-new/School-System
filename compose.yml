@@ -1,14 +1,21 @@
 services:
   backend:
-    build: ./backend 
+    build: ./backend
     container_name: django_backend
-    env_file: 
-      - ./backend:/.env
+    env_file:
+      - ./backend/.env
     command: python school_systems/manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend:/school_systems
     ports:
-      - 8000:8000
+      - "8000:8000"
+
   frontend:
+    build: ./frontend
+    container_name: react_frontend
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
