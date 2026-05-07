@@ -4,11 +4,11 @@ ENV PYTHONDOWNWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
-COPY voting_system/requirements.txt .
+COPY school_systems/requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
 
 EXPOSE 8000
 
-CMD ["python","voting_system/manage.py","runserver","0.0.0.0:8000"]
+CMD ["python","school_systems/manage.py","runserver","0.0.0.0:8000"]

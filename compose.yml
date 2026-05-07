@@ -4,9 +4,9 @@ services:
     container_name: django_backend
     env_file: 
       - ./backend:/.env
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python school_systems/manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./backend:/voting_system
+      - ./backend:/school_systems
     ports:
       - 8000:8000
   frontend:
