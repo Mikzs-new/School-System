@@ -29,14 +29,17 @@ class Position(models.Model):
     election = models.ForeignKey(
         Election,
         on_delete=models.CASCADE,
+        related_name='positions'
     )
 
     def __str__(self):
         return f'Title: {self.title} Count: {self.seat_count}'
+    
 class CourseValidItem(models.Model):
     election = models.ForeignKey(
         Election,
         on_delete=models.CASCADE,
+        related_name='valid_courses'
     )
     course = models.ForeignKey(
         Course,
@@ -50,9 +53,10 @@ class YearLevelValidItem(models.Model):
     election = models.ForeignKey(
         Election,
         on_delete=models.CASCADE,
+        related_name='valid_year_levels'
     )
     def __str__(self):
-        return self.election.__str__() + ' ' + self.year_level
+        return f'{self.election.__str__()} {self.year_level}'
 
 class Partylist(models.Model):
     name = models.CharField(max_length=255)
@@ -60,6 +64,7 @@ class Partylist(models.Model):
     election = models.ForeignKey(
         Election,
         on_delete=models.CASCADE,
+        related_name='partylists'
     )
     def __str__(self):
         return f'{self.election.__str__()} Partylist: {self.name}'
@@ -72,6 +77,7 @@ class Candidate(models.Model):
     election = models.ForeignKey(
         Election,
         on_delete=models.CASCADE,
+        related_name='candidates'
     )
     position = models.ForeignKey(
         Position,
@@ -80,6 +86,7 @@ class Candidate(models.Model):
     partylist = models.ForeignKey(
         Partylist,
         on_delete=models.CASCADE,
+        related_name='candidates',
         null=True
     )
     image_file = models.ImageField(
@@ -101,6 +108,7 @@ class Vote(models.Model):
     election = models.ForeignKey(
         Election,
         on_delete=models.CASCADE,
+        related_name='votes'
     )
     year_level = models.SmallIntegerField()
 
@@ -108,6 +116,7 @@ class VoteItem(models.Model):
     vote = models.ForeignKey(
         Vote,
         on_delete=models.CASCADE,
+        related_name='vote_items'
     )
     candidate = models.ForeignKey(
         Candidate,

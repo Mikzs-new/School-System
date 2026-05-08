@@ -81,10 +81,14 @@ class StudentCreateSerializer(serializers.ModelSerializer):
         model = Student
         exclude = '__all__'
 
-    def validate_student_school_id(self, value):
-        if Student.objects.filter(student_school_id=value).exists():
+    def validate(self, data):
+        student_school_id = data.get('student_school_id')
+        school = data.get('school')
+
+        if Student.objects.filter(student_school_id=student_school_id,school=school).exists():
             raise serializers.ValidationError('Student Already Exists')
-        return value
+
+        return data
 
 class FacilitatorSerializer(serializers.ModelSerializer):
     class Meta:

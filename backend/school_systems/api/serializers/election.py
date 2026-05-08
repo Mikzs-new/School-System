@@ -2,7 +2,12 @@ from rest_framework import serializers
 
 from election.models import Election, Position, CourseValidItem, YearLevelValidItem, Candidate, Partylist, Vote, VoteItem
 
-class PositionSerializer(serializers.ModelSerializer):
+class PositionDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Position
+        fields = '__all__'
+
+class PositionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Position
         fields = '__all__'
@@ -20,7 +25,12 @@ class PositionCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Position Already Exists')
         return data
 
-class CourseValidItemSerializer(serializers.ModelSerializer):
+class CourseValidItemDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseValidItem
+        fields = '__all__'
+
+class CourseValidItemListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseValidItem
         fields = '__all__'
@@ -38,7 +48,12 @@ class CourseValidItemCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Election Valid Course Already Exists')
         return data
 
-class YearLevelValidItemSerializer(serializers.ModelSerializer):
+class YearLevelValidItemDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = YearLevelValidItem
+        fields = '__all__'
+
+class YearLevelValidItemListSerializer(serializers.ModelSerializer):
     class Meta:
         model = YearLevelValidItem
         fields = '__all__'
@@ -56,7 +71,12 @@ class YearLevelValidItemCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Election Valid Year Level Already Exists')
         return data
 
-class CandidateSerializer(serializers.ModelSerializer):
+class CandidateDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Candidate
+        fields = '__all__'
+
+class CandidateListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Candidate
         fields = '__all__'
@@ -74,10 +94,19 @@ class CandidateCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Election Candidate Already Exists')
         return data
 
-class PartylistSerializer(serializers.ModelSerializer):
+class PartylistDetailSerializer(serializers.ModelSerializer):
+    candidates = CandidateDetailSerializer(many=True, read_only=True)
+
     class Meta:
         model = Partylist
-        fields = '__all__'
+        fields = ['name','description','candidates']
+
+class PartylistListSerializer(serializers.ModelSerializer):
+    candidates = CandidateDetailSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Partylist
+        fields = ['name','description','candidates']
 
 class PartylistCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,10 +121,21 @@ class PartylistCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Election Partylist Already Exists')
         return data
 
-class ElectionSerializer(serializers.ModelSerializer):
+class ElectionDetailSerializer(serializers.ModelSerializer):
+    positions = PositionDetailSerializer(many=True, read_only=True)
+    valid_courses = CourseValidItemDetailSerializer(many=True, read_only=True)
+    valid_year_levels = YearLevelValidItemDetailSerializer(many=True, read_only=True)
+    candidates = CandidateDetailSerializer(many=True, read_only=True)
+    partylists = PartylistDetailSerializer(many=True, read_only=True)
+
     class Meta:
         model = Election
-        fields = '__all__'
+        fields = ['id', 'name', 'valid_courses', 'valid_year_levels', 'positions','partylists','candidates']
+
+class ElectionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Election
+        fields = ['id', 'name']
 
 class ElectionCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -107,10 +147,17 @@ class VoteItemSerializer(serializers.ModelSerializer):
         model = VoteItem
         fields = '__all__'
 
-class VoteSerializer(serializers.ModelSerializer):
+class VoteDetailSerializer(serializers.ModelSerializer):
+    vote_items = VoteItemSerializer(many=True, read_only=True)
+
     class Meta:
         model = Vote
-        fields = '__all__'
+        fields = ['id','student','year_level','election','vote_items']
+
+class VoteListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vote
+        fields = ['id','student','year_level','election']
 
 class VoteCreateSerializer(serializers.ModelSerializer):
     class Meta:
