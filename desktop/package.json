@@ -1,0 +1,25 @@
+{
+  "name": "school-voting-desktop",
+  "version": "1.0.0",
+  "description": "Desktop client for the School Voting API (Electron + React).",
+  "main": "src/main/main.js",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on tcp:5174 && cross-env NODE_ENV=development electron .\"",
+    "build": "vite build",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "axios": "^1.7.9",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^41.5.0",
+    "lucide-react": "^0.468.0",
+    "pg": "^8.20.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^6.0.7",
+    "wait-on": "^8.0.1"
+  }
+}
