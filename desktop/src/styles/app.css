@@ -1,0 +1,340 @@
+:root {
+  color: #111;
+  background: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  background: #eee;
+  border: 1px solid #777;
+  color: #111;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 5px 10px;
+}
+
+button svg {
+  display: none;
+}
+
+button:disabled {
+  color: #777;
+  cursor: not-allowed;
+}
+
+input,
+textarea {
+  border: 1px solid #777;
+  color: #111;
+  padding: 6px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.login-page {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 60px 16px;
+}
+
+.login-panel {
+  border: 1px solid #777;
+  max-width: 360px;
+  padding: 16px;
+  width: 100%;
+}
+
+.login-heading {
+  border-bottom: 1px solid #bbb;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+}
+
+.login-heading h1,
+.login-heading p,
+.page-header h1,
+.data-panel h2,
+.dashboard-band h2,
+.tool-card h2 {
+  margin: 0;
+}
+
+.login-form,
+.page-stack,
+.record-list,
+.candidate-list,
+.data-panel,
+.ballot {
+  display: grid;
+}
+
+.login-form,
+.page-stack {
+  gap: 14px;
+}
+
+.record-list,
+.candidate-list,
+.data-panel,
+.ballot {
+  gap: 10px;
+}
+
+.login-form label,
+.field-row,
+.input-frame,
+.candidate-copy {
+  display: grid;
+  gap: 5px;
+}
+
+.input-frame svg,
+.brand-mark,
+.eyebrow,
+.option-card small,
+.tool-card p,
+.dashboard-band svg,
+.option-card svg,
+.tool-card svg,
+.radio-mark {
+  display: none;
+}
+
+.input-frame input {
+  width: 100%;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  border-right: 1px solid #777;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+
+.brand {
+  border-bottom: 1px solid #bbb;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+}
+
+.brand strong,
+.brand span,
+.signed-in strong,
+.signed-in span {
+  display: block;
+}
+
+.nav-list {
+  display: grid;
+  gap: 4px;
+}
+
+.nav-item,
+.logout-button,
+.primary-button,
+.secondary-button,
+.danger-button {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.nav-item,
+.logout-button {
+  justify-content: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.nav-item.active {
+  background: #ddd;
+  font-weight: bold;
+}
+
+.sidebar-footer {
+  border-top: 1px solid #bbb;
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.content {
+  padding: 16px;
+}
+
+.page-header {
+  align-items: center;
+  border-bottom: 1px solid #bbb;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 10px;
+}
+
+.danger-button {
+  background: #f5dddd;
+  border-color: #a55;
+  color: #600;
+}
+
+.full-width,
+.submit-vote {
+  width: 100%;
+}
+
+.dashboard-band,
+.ballot,
+.tool-card,
+.option-card,
+.data-panel,
+.field-help {
+  border: 1px solid #777;
+  padding: 12px;
+}
+
+.field-help {
+  background: #f7f7f7;
+}
+
+.field-help ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.field-help p {
+  margin: 8px 0;
+}
+
+.option-grid,
+.admin-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.option-card,
+.tool-card {
+  background: #fff;
+  color: #111;
+  min-height: 44px;
+  text-align: left;
+  width: 100%;
+}
+
+.active-tool,
+.selected-record,
+.candidate-row.selected {
+  background: #eee;
+}
+
+.module-layout {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
+}
+
+.record-row,
+.candidate-row {
+  border: 1px solid #999;
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  text-align: left;
+}
+
+.candidate-row {
+  align-items: center;
+  grid-template-columns: auto 1fr;
+}
+
+.record-row span,
+.muted-copy,
+.candidate-copy small {
+  color: #555;
+}
+
+.json-editor {
+  font-family: Consolas, "Courier New", monospace;
+  min-height: 240px;
+  resize: vertical;
+  width: 100%;
+}
+
+.action-row,
+.privileged-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.error-banner,
+.status-banner,
+.empty-state {
+  border: 1px solid #777;
+  padding: 8px;
+}
+
+.error-banner,
+.status-banner.error {
+  background: #f5dddd;
+  color: #600;
+}
+
+.status-banner.success {
+  background: #ddf2dd;
+  color: #040;
+}
+
+.status-banner.info,
+.empty-state {
+  background: #eee;
+  color: #333;
+}
+
+.page-notice {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 760px) {
+  .app-shell,
+  .module-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-bottom: 1px solid #777;
+    border-right: 0;
+  }
+
+  .page-header {
+    align-items: stretch;
+    display: grid;
+    gap: 8px;
+  }
+}
