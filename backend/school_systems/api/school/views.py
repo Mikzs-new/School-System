@@ -1,13 +1,22 @@
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
-from ..permissions import IsAdmin, CanManageModel, CanVote
+from ..permissions.permissions import IsAdmin, CanManageModel
 
 from school.models import Registration, School, Facilitator, Student, Course, Department
 
-from ..serializers.school import FacilitatorSerializer, FacilitatorCreateSerializer, SchoolSerializer, SchoolCreateSerializer, StudentSerializer, StudentCreateSerializer, CourseSerializer, CourseCreateSerializer, RegistrationCreateSerializer, RegistrationSerializer, DepartmentSerializer, DepartmentCreateSerializer
+from .serializers.create import FacilitatorCreateSerializer, SchoolCreateSerializer, StudentCreateSerializer, CourseCreateSerializer, RegistrationCreateSerializer, DepartmentCreateSerializer
 
-from ..validation import validate_csv, validate_image
+from .serializers.detail import FacilitatorDetailSerializer, SchoolDetailSerializer, StudentDetailSerializer, CourseDetailSerializer, RegistrationDetailSerializer, DepartmentDetailSerializer
+
+from .serializers.list import FacilitatorListSerializer, SchoolListSerializer, StudentListSerializer, CourseListSerializer, RegistrationListSerializer, DepartmentListSerializer
+
+from .serializers.list import FacilitatorListSerializer
+
+from api.utils.validators.csv import validate_students_csv
+
+import csv
 
 class FacilitatorViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -27,9 +36,14 @@ class FacilitatorViewSet(viewsets.ModelViewSet):
 
     
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == 'retrieve':
+            return FacilitatorDetailSerializer
+        elif self.action == 'create':
             return FacilitatorCreateSerializer
-        return FacilitatorSerializer
+        elif self.action == 'list':
+            return FacilitatorListSerializer
+        
+        return FacilitatorListSerializer
 
 class DepartmentViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -48,9 +62,14 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         return Department.objects.none()
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == 'retrieve':
+            return DepartmentDetailSerializer
+        elif self.action == 'create':
             return DepartmentCreateSerializer
-        return DepartmentSerializer
+        elif self.action == 'list':
+            return DepartmentListSerializer
+        
+        return DepartmentListSerializer
 
 class CourseViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -69,9 +88,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         return Course.objects.none()
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == 'retrieve':
+            return CourseDetailSerializer
+        elif self.action == 'create':
             return CourseCreateSerializer
-        return CourseSerializer
+        elif self.action == 'list':
+            return CourseListSerializer
+        return CourseListSerializer
 
 class RegistrationViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -81,9 +104,13 @@ class RegistrationViewSet(viewsets.ModelViewSet):
         return Registration.objects.all()
     
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == 'retrieve':
+            return RegistrationDetailSerializer
+        elif self.action == 'create':
             return RegistrationCreateSerializer
-        return RegistrationSerializer
+        elif self.action == 'list':
+            return RegistrationListSerializer
+        return RegistrationListSerializer
 
 class SchoolViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -93,9 +120,13 @@ class SchoolViewSet(viewsets.ModelViewSet):
         return School.objects.all()
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == 'retrieve':
+            return SchoolDetailSerializer
+        elif self.action == 'create':
             return SchoolCreateSerializer
-        return SchoolSerializer
+        elif self.action == 'list':
+            return SchoolListSerializer
+        return SchoolListSerializer
 
 class StudentViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -114,6 +145,31 @@ class StudentViewSet(viewsets.ModelViewSet):
         return Student.objects.none()
     
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action == 'retrieve':
+            return StudentDetailSerializer
+        elif self.action == 'create':
             return StudentCreateSerializer
-        return StudentSerializer
+        elif self.action == 'list':
+            return StudentListSerializer
+        return StudentListSerializer
+
+# BULK CREATE STUDENTS 
+
+class BulkStudentCSVAPIView(APIView):
+    permission_classes = [IsAuthenticated,CanManageModel]
+    def post(self, request):
+        file = request.FILES.get('file')
+        validate_students_csv(file)
+
+        decoded = (file.read().decode('utf-8'))
+
+        reader = csv.DictReader(decoded.splitlines())
+
+        students = []
+        error = []
+        updated = []
+
+        for index,row in enumerate(reader):
+            return
+
+        return

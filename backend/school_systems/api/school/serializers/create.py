@@ -2,11 +2,6 @@ from rest_framework import serializers
 
 from school.models import Registration, School, Facilitator, Student, Course, Department
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Registration
-        fields = '__all__'
-
 class RegistrationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Registration
@@ -17,11 +12,6 @@ class RegistrationCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Registration Already Exists')
         return value
 
-class SchoolSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = School
-        fields = '__all__'
-
 class SchoolCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
@@ -31,11 +21,6 @@ class SchoolCreateSerializer(serializers.ModelSerializer):
         if School.objects.filter(school_id=value).exists():
             raise serializers.ValidationError('School Already Exists')
         return value
-
-class DepartmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Department
-        fields = '__all__'
 
 class DepartmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,11 +36,6 @@ class DepartmentCreateSerializer(serializers.ModelSerializer):
         
         return data
 
-class CourseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Course
-        fields = '__all__'
-
 class CourseCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
@@ -70,30 +50,20 @@ class CourseCreateSerializer(serializers.ModelSerializer):
         
         return data
 
-class StudentSerializer(serializers.ModelSerializer):
-    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
-    class Meta:
-        model = Student
-        fields = ['id', 'first_name', 'last_name', 'student_school_id', 'school', 'course', 'year_level', 'email']
-
 class StudentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
-        exclude = '__all__'
+        exclude = ['first_name','last_name','school_student_id','school','course','year_level','email']
 
     def validate(self, data):
         student_school_id = data.get('student_school_id')
         school = data.get('school')
+        year_level = data.get('year_level')
 
-        if Student.objects.filter(student_school_id=student_school_id,school=school).exists():
-            raise serializers.ValidationError('Student Already Exists')
+        if Student.objects.filter(student_school_id=student_school_id,school=school,year_level=year_level).exists():
+            raise serializers.ValidationError('Student Updated & Already Exists')
 
         return data
-
-class FacilitatorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Facilitator
-        fields = '__all__'
 
 class FacilitatorCreateSerializer(serializers.ModelSerializer):
     class Meta:

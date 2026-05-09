@@ -1,7 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from api.views import election, school
+from .election import views as election
+from .school import views as school
 
 # V1
 router = DefaultRouter()
