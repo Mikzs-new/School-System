@@ -73,6 +73,7 @@ class Candidate(models.Model):
     student = models.ForeignKey(
         Student,
         on_delete=models.CASCADE,
+        related_name='candidate'
     )
     election = models.ForeignKey(
         Election,
@@ -82,6 +83,7 @@ class Candidate(models.Model):
     position = models.ForeignKey(
         Position,
         on_delete=models.CASCADE,
+        related_name='candidate'
     )
     partylist = models.ForeignKey(
         Partylist,
@@ -92,6 +94,13 @@ class Candidate(models.Model):
     image_file = models.ImageField(
         upload_to='',
         blank=True,
+        null=True
+    )
+
+    year_level = models.SmallIntegerField(default=0)
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
         null=True
     )
 
@@ -110,7 +119,12 @@ class Vote(models.Model):
         on_delete=models.CASCADE,
         related_name='votes'
     )
-    year_level = models.SmallIntegerField()
+    year_level = models.SmallIntegerField(default=0)
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        null=True
+    )
 
 class VoteItem(models.Model):
     vote = models.ForeignKey(

@@ -30,7 +30,8 @@ class School(models.Model):
 class Facilitator(models.Model):
     user = models.OneToOneField(
         User,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True
     )
 
     first_name = models.CharField(max_length=255)
@@ -40,7 +41,12 @@ class Facilitator(models.Model):
         School,
         on_delete=models.CASCADE,
     )
+    email = models.EmailField(null=True)
     created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def full_name(self):
+        return f'{self.first_name} {self.last_name}'
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
@@ -73,7 +79,8 @@ class Course(models.Model):
 class Student(models.Model):
     user = models.OneToOneField(
         User,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True
     )
 
     first_name = models.CharField(max_length=255)
@@ -91,6 +98,10 @@ class Student(models.Model):
     email = models.EmailField()
 
     created_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
