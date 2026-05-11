@@ -53,15 +53,16 @@ class CourseCreateSerializer(serializers.ModelSerializer):
 class StudentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
-        exclude = ['first_name','last_name','school_student_id','school','course','year_level','email']
+        fields = ['user','first_name','last_name','school_student_id','school','course','year_level','email']
 
     def validate(self, data):
-        student_school_id = data.get('student_school_id')
+        student_school_id = data.get('school_student_id')
         school = data.get('school')
         year_level = data.get('year_level')
 
+
         if Student.objects.filter(student_school_id=student_school_id,school=school,year_level=year_level).exists():
-            raise serializers.ValidationError('Student Updated & Already Exists')
+            raise serializers.ValidationError('Student record is up-to-date')
 
         return data
 

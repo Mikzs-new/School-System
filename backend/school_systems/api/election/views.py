@@ -53,6 +53,9 @@ class CandidateViewSet(viewsets.ModelViewSet):
         elif self.action == 'list':
             return CandidateListSerializer
         return CandidateListSerializer
+    
+    def perform_create(self, serializer):
+        facilitator = self.request.user.facilitator
 
 class PosistionViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
