@@ -12,29 +12,16 @@ from .serializers.detail import FacilitatorDetailSerializer, SchoolDetailSeriali
 from .serializers.list import FacilitatorListSerializer, SchoolListSerializer, StudentListSerializer, CourseListSerializer, RegistrationListSerializer, DepartmentListSerializer
 from .serializers.update import StudentUpdateSerializer, FacilitatorUpdateSerializer
 
-from django.contrib.auth.models import User, Group
-from django.utils.crypto import get_random_string
+from django.contrib.auth.models import Group
+from django.contrib.auth import get_user_model
+
 from django.db import transaction
 
+User = get_user_model()
+
 from api.utils.validators.csv import validate_students_csv
-
+from api.utils.validators.create import create_user
 import csv
-
-def create_user(username,email,school,group):
-    password = get_random_string(12)
-
-    if User.objects.filter(username=username).exists():
-        raise serializers.ValidationError('Username already existed')
-
-    user = User.objects.create_user(
-        username=username,
-        email=email,
-        password=password
-    )
-
-    user.groups.add(group)
-
-    return user
 
 class FacilitatorViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
