@@ -1,5 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class Registration(models.Model):
     time_registered = models.DateTimeField(auto_created=True)
