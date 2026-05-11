@@ -19,4 +19,5 @@ router.register(r'votes', election.VoteViewSet, basename='votes')
 
 urlpatterns = [
     path('v1/', include(router.urls)),
+    path('v1/upload/student-csv/', school.BulkStudentCSVView.as_view())
 ]

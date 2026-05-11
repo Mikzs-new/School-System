@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 class Registration(models.Model):
     time_registered = models.DateTimeField(auto_created=True)
     name = models.CharField(max_length=255)
+    initials = models.CharField(max_length=25, null=True)
     school_id = models.IntegerField()
     complete_address = models.TextField(blank=True)
     email = models.EmailField()
@@ -17,7 +18,7 @@ class School(models.Model):
     school_id = models.IntegerField()
     complete_address = models.TextField(blank=True)
     email = models.EmailField()
-
+    initials = models.CharField(max_length=25, null=True)
     logo = models.ImageField(
         upload_to='',
         blank=True,
@@ -97,6 +98,11 @@ class Student(models.Model):
     year_level = models.SmallIntegerField()
     email = models.EmailField()
 
+    added_by = models.ForeignKey(
+        Facilitator,
+        on_delete=models.CASCADE,
+        null=True
+    )
     created_at = models.DateTimeField(auto_now=True)
 
     @property
