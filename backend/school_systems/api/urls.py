@@ -16,6 +16,8 @@ router.register(r'candidates', election.CandidateViewSet, basename='candidates')
 router.register(r'partylists', election.PartylistViewSet, basename='partylists')
 router.register(r'elections', election.ElectionViewSet, basename='elections')
 router.register(r'votes', election.VoteViewSet, basename='votes')
+router.register(r'election_year_level', election.YearLevelValidItemCreateViewSet, basename='election_year_level')
+router.register(r'election_course_valid', election.CourseLevelValidItemViewSet, 'election_course_valid')
 
 urlpatterns = [
     path('v1/', include(router.urls)),

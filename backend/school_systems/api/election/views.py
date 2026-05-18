@@ -1,11 +1,12 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, serializers
 from rest_framework.permissions import IsAuthenticated
 
-from ..permissions.permissions import IsAdmin, CanManageModel, CanVote
+from ..permissions.permissions import CanManageElection, CanVote
 
-from election.models import Election, Position, Candidate, Partylist, Vote
+from election.models import Election, Position, Candidate, Partylist, Vote, YearLevelValidItem, CourseValidItem, PartylistElectionItem
+from school.models import Student
 
-from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, PositionCreateSerializer, VoteCreateSerializer 
+from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, PositionCreateSerializer, VoteCreateSerializer, CourseValidItemCreateSerializer, YearLevelValidItemCreateSerializer, PartylistElectionItem
 
 from .serializers.detail import VoteDetailSerializer,  PositionDetailSerializer, ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer
 
@@ -17,7 +18,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
         if self.action in ['list','retrieve']:
             return [IsAuthenticated()]
 
-        return [IsAuthenticated(), CanManageModel()]
+        return [IsAuthenticated(), CanManageElection()]
 
     def get_queryset(self):
         user = self.request.user
@@ -56,10 +57,27 @@ class CandidateViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         facilitator = self.request.user.facilitator
+        school = facilitator.school
+        validated = serializer.validated_data
+        student = validated['student']
+        election = validated['election']
+
+        if school != election.school:
+            raise serializers.ValidationError('Using wrong data')
+
+        year_level = student.year_level
+        course = student.course
+
+        serializer.save(
+            facilitator=facilitator,
+            year_level=year_level,
+            course=course,
+        )
+
 
 class PosistionViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
-        return [IsAuthenticated(), CanManageModel()]
+        return [IsAuthenticated(), CanManageElection()]
     
     def get_queryset(self):
         user = self.request.user
@@ -90,6 +108,20 @@ class PosistionViewSet(viewsets.ModelViewSet):
         elif self.action == 'list':
             return PositionListSerializer
         return PositionListSerializer
+    
+    def perform_create(self, serializer):
+        facilitator = self.request.user.facilitator
+        school = facilitator.school
+
+        election = serializer.validated_data['election']
+
+        if school != election.school:
+            raise serializers.ValidationError('Using wrong data')
+        
+        serializer.save(
+            added_by=facilitator
+        )
+
 
 class PartylistViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -97,7 +129,7 @@ class PartylistViewSet(viewsets.ModelViewSet):
         if self.action in ['list','retrieve']:
             return [IsAuthenticated()]
 
-        return [IsAuthenticated(), CanManageModel()]
+        return [IsAuthenticated(), CanManageElection()]
     
     def get_queryset(self):
         user = self.request.user
@@ -126,13 +158,17 @@ class PartylistViewSet(viewsets.ModelViewSet):
 
         return PartylistListSerializer
     
+    def perform_create(self, serializer):
+        
+        return super().perform_create(serializer)
+    
 class ElectionViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
 
         if self.action in ['list','retrieve']:
             return [IsAuthenticated()]
 
-        return [IsAuthenticated(), CanManageModel()]
+        return [IsAuthenticated(), CanManageElection()]
     
     def get_queryset(self):
         user = self.request.user
@@ -160,6 +196,14 @@ class ElectionViewSet(viewsets.ModelViewSet):
             return ElectionListSerializer
 
         return ElectionListSerializer
+    
+    def perform_create(self, serializer):
+        facilitator = self.request.user.facilitator
+        
+        serializers.save(
+            added_by=facilitator
+        )
+
     
 class VoteViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -194,3 +238,136 @@ class VoteViewSet(viewsets.ModelViewSet):
             return VoteListSerializer
 
         return VoteListSerializer
+    
+    def perform_create(self, serializer):
+        user = self.request.user
+
+        if user.is_staff or hasattr(user, 'facilitator'):
+            raise serializers.ValidationError('You cannot vote')
+
+        student = user.student
+        course = student.course
+        year_level = student.year_level
+
+        serializer.save(
+            student=student,
+            course=course,
+            year_level=year_level,
+        )
+
+class CourseLevelValidItemViewSet(viewsets.ModelViewSet):
+    def get_permissions(self):
+        return [IsAuthenticated(), CanManageElection()]
+    
+    def get_queryset(self):
+        user = self.request.user
+
+        if hasattr(user, 'facilitator'):
+            queryset = CourseValidItem.objects.filter(
+                election__school=user.facilitator.school
+            )
+        else: 
+            return CourseValidItem.objects.none()
+        
+        election = self.request.query_params.get('election')
+
+        if election:
+            queryset = queryset.filter(
+                election=election
+            )
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CourseValidItemCreateSerializer
+        return 
+    
+    def perform_create(self, serializer):
+        facilitator = self.request.user.facilitator
+        school = facilitator.school
+
+        election = serializer.validated_data['election']
+
+        if school != election.school:
+            raise serializers.ValidationError('Using wrong data')
+        
+        serializer.save(
+            added_by=facilitator
+        )
+
+class YearLevelValidItemCreateViewSet(viewsets.ModelViewSet):
+    def get_permissions(self):
+        return [IsAuthenticated(), CanManageElection()]
+    
+    def get_queryset(self):
+        user = self.request.user
+
+        if hasattr(user, 'facilitator'):
+            queryset = YearLevelValidItem.objects.filter(
+                election__school=user.facilitator.school
+            )
+        else: 
+            return YearLevelValidItem.objects.none()
+        
+        election = self.request.query_params.get('election')
+
+        if election:
+            queryset = queryset.filter(
+                election=election
+            )
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return YearLevelValidItemCreateSerializer
+        return 
+    
+    def perform_create(self, serializer):
+        facilitator = self.request.user.facilitator
+        school = facilitator.school
+
+        election = serializer.validated_data['election']
+
+        if school != election.school:
+            raise serializers.ValidationError('Using wrong data')
+        
+        serializer.save(
+            added_by=facilitator
+        )
+
+class PartylistElectionItemCreateViewSet(viewsets.ModelViewSet):
+    def get_permissions(self):
+        return [IsAuthenticated(), CanManageElection()]
+    
+    def get_queryset(self):
+        user = self.request.user
+
+        if hasattr(user, 'facilitator'):
+            queryset = PartylistElectionItem.objects.filter(
+                election__school=user.facilitator.school
+            )
+        else: 
+            return PartylistElectionItem.objects.none()
+        
+        election = self.request.query_params.get('election')
+
+        if election:
+            queryset = queryset.filter(
+                election=election
+            )
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return PartylistElectionItemCreateViewSet
+        return 
+    
+    def perform_create(self, serializer):
+        facilitator = self.request.user.facilitator
+        
+        serializer.save(
+            added_by=facilitator
+        )

@@ -59,8 +59,13 @@ class CourseValidItem(models.Model):
         Course,
         on_delete=models.CASCADE,
     )
+    added_by = models.ForeignKey(
+        Facilitator,
+        on_delete=models.CASCADE,
+        null=True
+    )
     def __str__(self):
-        return self.election.__str__() + ' ' + self.course.__str__()
+        return f"{self.election} - {self.course}"
 
 class YearLevelValidItem(models.Model):
     year_level = models.SmallIntegerField()
@@ -69,16 +74,21 @@ class YearLevelValidItem(models.Model):
         on_delete=models.CASCADE,
         related_name='valid_year_levels'
     )
+    added_by = models.ForeignKey(
+        Facilitator,
+        on_delete=models.CASCADE,
+        null=True
+    )
     def __str__(self):
         return f'{self.election.__str__()} {self.year_level}'
 
 class Partylist(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
-    election = models.ForeignKey(
-        Election,
+    school = models.ForeignKey(
+        School,
         on_delete=models.CASCADE,
-        related_name='partylists'
+        null=True
     )
     added_by = models.ForeignKey(
         Facilitator,
@@ -86,7 +96,24 @@ class Partylist(models.Model):
         null=True
     )
     def __str__(self):
-        return f'{self.election.__str__()} Partylist: {self.name}'
+        return f'Partylist: {self.name}'
+    
+class PartylistElectionItem(models.Model):
+    election = models.ForeignKey(
+        Election,
+        on_delete=models.CASCADE,
+        related_name='partylists',
+    )
+    partylist = models.ForeignKey(
+        Partylist,
+        on_delete=models.CASCADE,
+        related_name='elections',
+    )
+    added_by = models.ForeignKey(
+        Facilitator,
+        on_delete=models.CASCADE,
+        null=True
+    )
 
 class Candidate(models.Model):
     student = models.ForeignKey(

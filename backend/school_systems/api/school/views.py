@@ -52,6 +52,9 @@ class FacilitatorViewSet(viewsets.ModelViewSet):
         
         return FacilitatorListSerializer
     
+    def perform_authentication(self, request):
+        return super().perform_authentication(request)
+    
     def perform_create(self, serializer):
         with transaction.atomic():
             validated = serializer.validated_data
@@ -71,13 +74,10 @@ class FacilitatorViewSet(viewsets.ModelViewSet):
             username = f"{school.initials.lower()}_{validated['school_staff_id']}"
             email = validated['email']
 
-            user = create_user(username,email,school,group)
+            user_created = create_user(username,email,school,group)
 
-            validated['user'] = user
-            validated['school'] = school
-            
             serializer.save(
-                user=user,
+                user=user_created,
                 school=school
             )
 
@@ -117,6 +117,10 @@ class DepartmentViewSet(viewsets.ModelViewSet):
             return DepartmentListSerializer
         
         return DepartmentListSerializer
+    
+    def perform_create(self, serializer):
+        
+        return super().perform_create(serializer)
 
 class CourseViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -222,13 +226,10 @@ class StudentViewSet(viewsets.ModelViewSet):
             username = f"{school.initials.lower()}_{validated['school_student_id']}"
             email = validated['email']
             
-            user = create_user(username,email,school,group)
-
-            validated['user'] = user
-            validated['school'] = school
+            user_created = create_user(username,email,school,group)
             
             serializer.save(
-                user=user,
+                user=user_created,
                 school=school
             )
     

@@ -26,7 +26,7 @@ class StudentListSerializer(serializers.ModelSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
     class Meta:
         model = Student
-        fields = ['id', 'full_name', 'student_school_id', 'school', 'course', 'year_level', 'email']
+        fields = ['id', 'full_name', 'student_school_id', 'course', 'year_level']
 
 class FacilitatorListSerializer(serializers.ModelSerializer):
     class Meta:
