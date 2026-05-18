@@ -15,16 +15,14 @@ class CandidateListSerializer(serializers.ModelSerializer):
         fields = ['id','student','election','position','partylist']
 
 class PartylistListSerializer(serializers.ModelSerializer):
-    candidates = CandidateDetailSerializer(many=True, read_only=True)
-
     class Meta:
         model = Partylist
-        fields = ['id','name','description','candidates']
+        fields = ['id','name','added_by']
 
 class ElectionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Election
-        fields = ['id', 'name','available','start_datetime','end_datetime']
+        fields = ['id', 'name','available','start_datetime','duration']
 
 class VoteListSerializer(serializers.ModelSerializer):
     class Meta:

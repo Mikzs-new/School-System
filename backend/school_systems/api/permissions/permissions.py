@@ -14,6 +14,12 @@ class CanManageModel(BasePermission):
             user.is_staff
         )
 
+class CanManageElection(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+
+        return user.groups.filter(name='Facilitator').exists()
+
 class CanVote(BasePermission):
     def has_permission(self, request, view):
         return request.user.groups.filter(name='Student').exists()

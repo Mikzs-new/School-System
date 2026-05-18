@@ -12,13 +12,14 @@ class RegistrationDetailSerializer(serializers.ModelSerializer):
 class SchoolDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
-        fields = ['name','school_id','complete_address','email']
+        fields = ['name','initials','school_id','complete_address','email']
 
 class DepartmentDetailSerializer(serializers.ModelSerializer):
     school = SmallSchoolSerializer(read_only=True)
+    courses = SmallCourseSerializer(read_only=True, many=True)
     class Meta:
         model = Department
-        fields = ['name','school']
+        fields = ['name','school','courses']
 
 class CourseDetailSerializer(serializers.ModelSerializer):
     department = SmallDepartmentSerializer(read_only=True)

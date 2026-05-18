@@ -18,7 +18,15 @@ class Registration(models.Model):
 class School(models.Model):
     name = models.CharField(max_length=255)
     school_id = models.IntegerField()
-    complete_address = models.TextField(blank=True)
+
+    country = models.CharField(max_length=255, null=True)
+    region = models.CharField(max_length=255, null=True)
+    province = models.CharField(max_length=255, null=True)
+    city = models.CharField(max_length=255, null=True)
+    barangay = models.CharField(max_length=255, null=True)
+    postal_code = models.CharField(max_length=255, null=True)
+    street = models.CharField(max_length=255, null=True)
+
     email = models.EmailField()
     initials = models.CharField(max_length=25, null=True)
     logo = models.ImageField(
@@ -26,6 +34,10 @@ class School(models.Model):
         blank=True,
         null=True,
     )
+
+    @property
+    def complete_address(self):
+        return f'{self.street}, {self.barangay}, {self.city}'
 
     def __str__(self):
         return self.name
@@ -69,6 +81,7 @@ class Course(models.Model):
     department = models.ForeignKey(
         Department,
         on_delete=models.CASCADE,
+        related_name='courses',
         null=True
     )
     

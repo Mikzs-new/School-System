@@ -5,7 +5,7 @@ from school.models import Course, School, Department
 class SmallCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ['name']
+        fields = ['id','name']
 
 class SmallSchoolSerializer(serializers.ModelSerializer):
     class Meta:

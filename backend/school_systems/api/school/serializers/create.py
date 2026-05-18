@@ -26,10 +26,17 @@ class DepartmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ['name','school']
-
     def validate(self, data):
         name = data.get('name')
-        school = data.get('school')
+        request = self.context.get('request')
+        user = request.user
+
+        if user.is_staff:
+            school = data.get('school')
+        elif hasattr(user, 'Facilitator'):
+            school = user.facilitator.school
+        else:
+            raise serializers.ValidationError('No Permission')
 
         if Department.objects.filter(name=name, school=school).exists():
             raise serializers.ValidationError('Department Already Exists')
@@ -43,7 +50,15 @@ class CourseCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         name = data.get('name')
-        school = data.get('school')
+        request = self.context.get('request')
+        user = request.user
+
+        if user.is_staff:
+            school = data.get('school')
+        elif hasattr(user, 'Facilitator'):
+            school = user.facilitator.school
+        else:
+            raise serializers.ValidationError('No Permission')
 
         if Course.objects.filter(name=name, school=school).exists():
             raise serializers.ValidationError('Course Already Exists')
@@ -53,12 +68,21 @@ class CourseCreateSerializer(serializers.ModelSerializer):
 class StudentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
-        fields = ['user','first_name','last_name','school_student_id','school','course','year_level','email']
+        fields = ['first_name','last_name','school_student_id','school','course','year_level','email']
 
     def validate(self, data):
         student_school_id = data.get('school_student_id')
-        school = data.get('school')
         year_level = data.get('year_level')
+
+        request = self.context.get('request')
+        user = request.user
+
+        if user.is_staff:
+            school = data.get('school')
+        elif hasattr(user, 'Facilitator'):
+            school = user.facilitator.school
+        else:
+            raise serializers.ValidationError('No Permission')
 
 
         if Student.objects.filter(student_school_id=student_school_id,school=school,year_level=year_level).exists():
@@ -69,11 +93,19 @@ class StudentCreateSerializer(serializers.ModelSerializer):
 class FacilitatorCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Facilitator
-        fields = '__all__'
+        fields = ['first_name','last_name','school','school_staff_id','email']
     
     def validate(self, data):
         school_staff_id = data.get('school_staff_id')
-        school = data.get('school')
+        request = self.context.get('request')
+        user = request.user
+
+        if user.is_staff:
+            school = data.get('school')
+        elif hasattr(user, 'Facilitator'):
+            school = user.facilitator.school
+        else:
+            raise serializers.ValidationError('No Permission')
 
         if Facilitator.objects.filter(school_staff_id=school_staff_id, school=school).exists():
             raise serializers.ValidationError('Staff Already Exists')
