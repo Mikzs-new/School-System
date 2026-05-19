@@ -3,10 +3,10 @@ from rest_framework.permissions import IsAuthenticated
 
 from ..permissions.permissions import CanManageElection, CanVote
 
-from election.models import Election, Position, Candidate, Partylist, Vote, YearLevelValidItem, CourseValidItem, PartylistElectionItem
+from election.models import Election, Position, Candidate, Partylist, Vote, YearLevelValidItem, CourseValidItem, PartylistElection
 from school.models import Student
 
-from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, PositionCreateSerializer, VoteCreateSerializer, CourseValidItemCreateSerializer, YearLevelValidItemCreateSerializer, PartylistElectionItem
+from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, PositionCreateSerializer, VoteCreateSerializer, CourseValidItemCreateSerializer, YearLevelValidItemCreateSerializer, PartylistElection
 
 from .serializers.detail import VoteDetailSerializer,  PositionDetailSerializer, ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer
 
@@ -345,11 +345,11 @@ class PartylistElectionItemCreateViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if hasattr(user, 'facilitator'):
-            queryset = PartylistElectionItem.objects.filter(
+            queryset = PartylistElection.objects.filter(
                 election__school=user.facilitator.school
             )
         else: 
-            return PartylistElectionItem.objects.none()
+            return PartylistElection.objects.none()
         
         election = self.request.query_params.get('election')
 
