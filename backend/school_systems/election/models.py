@@ -1,15 +1,31 @@
 from django.db import models
 
-from school.models import School, Student, Facilitator, Course
+from school.models import School, Student, Facilitator, Course, SchoolYear, SchoolYearStudentInfo
 
 from django.utils import timezone
 
-class Election(models.Model):
+class TimeStampedModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_noew=True)
+
+    class Meta:
+        abstract = True
+
+class ElectionStatus(models.TextChoices):
+    ENABLED = 'enabled', 'Enabled'
+    PAUSED = 'paused', 'Paused'
+    CANCELLED = 'cancelled', 'Cancelled'
+    HIDDEN = 'hidden', 'Hidden'
+    DRAFTED = 'drafted', 'Drafted'
+
+class Election(TimeStampedModel):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    school = models.ForeignKey(
-        School,
+
+    school_year = models.ForeignKey(
+        SchoolYear,
         on_delete=models.CASCADE,
+        null=True
     )
     created_by = models.ForeignKey(
         Facilitator,
@@ -18,6 +34,21 @@ class Election(models.Model):
 
     start_datetime = models.DateTimeField()
     duration = models.DurationField(null=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=ElectionStatus.choices,
+        default=ElectionStatus.DRAFTED
+    )
+
+    class Meta:
+        ordering = ['-start_datetime']
+
+        indexes = [
+            models.Index(fields=['school_year']),
+            models.Index(fields=['start_datetime']),
+            models.Index(fields=['status'])
+        ]
 
     @property
     def end_datetime(self):
@@ -32,7 +63,7 @@ class Election(models.Model):
         return self.school.__str__() + ' ' + self.name
     
 
-class Position(models.Model):
+class Position(TimeStampedModel):
     title = models.CharField(max_length=255)
     seat_count = models.SmallIntegerField()
     election = models.ForeignKey(
@@ -45,6 +76,14 @@ class Position(models.Model):
         on_delete=models.CASCADE,
         null=True
     )
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=['election','title'],
+                name='unique_position_per_election'
+            )
+        )
 
     def __str__(self):
         return f'Title: {self.title} Count: {self.seat_count}'
@@ -98,7 +137,12 @@ class Partylist(models.Model):
     def __str__(self):
         return f'Partylist: {self.name}'
     
-class PartylistElectionItem(models.Model):
+class PartylistElection(models.Model):
+    school_year = models.ForeignKey(
+        SchoolYear,
+        on_delete=models.CASCADE,
+        null=True
+    )
     election = models.ForeignKey(
         Election,
         on_delete=models.CASCADE,
@@ -114,10 +158,16 @@ class PartylistElectionItem(models.Model):
         on_delete=models.CASCADE,
         null=True
     )
+    class Meta:
+        indexes = [
+            models.Index(fields=['election']),
+            models.Index(fields=['partylist']),
+            models.Index(fields=['school_year'])
+        ]
 
-class Candidate(models.Model):
-    student = models.ForeignKey(
-        Student,
+class Candidate(TimeStampedModel):
+    student_info = models.ForeignKey(
+        SchoolYearStudentInfo,
         on_delete=models.CASCADE,
         related_name='candidate'
     )
@@ -148,21 +198,28 @@ class Candidate(models.Model):
         null=True
     )
 
-    year_level = models.SmallIntegerField(default=0)
-    course = models.ForeignKey(
-        Course,
-        on_delete=models.CASCADE,
-        null=True
-    )
-
     description = models.TextField(blank=True)
 
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=['election','student_info'],
+                name='unique_candidate_per_election'
+            )
+        )
+
+        indexes = [
+            models.Index(fields=['position']),
+            models.Index(fields=['partylist']),
+            models.Index(fields=['election']),
+        ]
+
     def __str__(self):
-        return f'{self.election.__str__()} Candidate: {self.student.__str__()}'
+        return f'{self.election.__str__()} Candidate: {self.student_info.__str__()}'
 
 class Vote(models.Model):
-    student = models.ForeignKey(
-        Student,
+    student_info = models.ForeignKey(
+        SchoolYearStudentInfo,
         on_delete=models.CASCADE,
     )
     election = models.ForeignKey(
@@ -171,12 +228,21 @@ class Vote(models.Model):
         related_name='votes'
     )
     vote_time = models.DateTimeField(auto_now=True, null=True)
-    year_level = models.SmallIntegerField(default=0)
-    course = models.ForeignKey(
-        Course,
-        on_delete=models.CASCADE,
-        null=True
-    )
+
+    class Meta:
+        ordering = ['-vote_time']
+
+        constraints = (
+            models.UniqueConstraint(
+                fields=['election','student_info'],
+                name='unique_student_vote_per_election'
+            )
+        )
+
+        indexes = [
+            models.Index(fields=['vote_time']),
+            models.Index(fields=['election']),
+        ]
 
 class VoteItem(models.Model):
     vote = models.ForeignKey(

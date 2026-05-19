@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from election.models import Election, Position, CourseValidItem, YearLevelValidItem, Candidate, Partylist, Vote, PartylistElectionItem
+from election.models import Election, Position, CourseValidItem, YearLevelValidItem, Candidate, Partylist, Vote, PartylistElection
 
 from api.utils.validators.image import validate_image
 
@@ -78,7 +78,7 @@ class PartylistCreateSerializer(serializers.ModelSerializer):
     
 class PartylistElectionItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PartylistElectionItem
+        model = PartylistElection
         fields = ['partylist','election']
     
     def validate(self, data):
@@ -90,7 +90,7 @@ class PartylistElectionItemSerializer(serializers.ModelSerializer):
 
         if school != partylist or school != election.school:
             raise serializers.ValidationError('Using wrong data')
-        elif PartylistElectionItem.objects.filter(election=election,partylist=partylist).exists():
+        elif PartylistElection.objects.filter(election=election,partylist=partylist).exists():
             raise serializers.ValidationError('Partylist already added to election')
 
         return data
