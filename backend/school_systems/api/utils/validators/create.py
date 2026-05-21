@@ -10,6 +10,9 @@ def create_user(username,email,group):
 
     if User.objects.filter(username=username).exists():
         raise serializers.ValidationError('Username already existed')
+    
+    if User.objects.filter(email=email).exists():
+        raise serializers.ValidationError('Email already used')
 
     user = User.objects.create_user(
         username=username,

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from election.models import Election, Position, CourseValidItem, YearLevelValidItem, Candidate, Partylist, Vote, PartylistElection
+from election.models import Election, Position, CourseValidItem, YearLevelValidItem, Candidate, Partylist, Vote, PartylistElection, VoteItem
 
 from api.utils.validators.image import validate_image
 
@@ -108,22 +108,9 @@ class ElectionCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Election already exists')
         return data
 
-class VoteCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Vote
-        fields = ['election']
-    
-    def validate(self, data):
-        request = self.context.get('request')
-        student = request.user.student
-        election = data.get('election')
+class VoteItemInputSerialzer(serializers.Serializer):
+    candidate = serializers.IntegerField()
 
-        if Vote.objects.filter(student=student,election=election).exists():
-            raise serializers.ValidationError('Student already voted')
-        return data
-    
-    def create(self, validated_data):
-        return super().create(validated_data)
-
-
-    
+class VoteCreateSerializer(serializers.Serializer):
+    election = serializers.IntegerField()
+    vote_items = VoteItemInputSerialzer(many=True)
