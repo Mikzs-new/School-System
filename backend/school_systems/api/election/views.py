@@ -1,16 +1,19 @@
-from rest_framework import viewsets, serializers
+from rest_framework import viewsets, serializers, status
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from ..permissions.permissions import CanManageElection, CanVote
 
 from election.models import Election, Position, Candidate, Partylist, Vote, YearLevelValidItem, CourseValidItem, PartylistElection
-from school.models import Student
+from school.models import SchoolYearStudentInfo
 
 from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, PositionCreateSerializer, VoteCreateSerializer, CourseValidItemCreateSerializer, YearLevelValidItemCreateSerializer, PartylistElection
 
 from .serializers.detail import VoteDetailSerializer,  PositionDetailSerializer, ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer
 
 from .serializers.list import VoteListSerializer, PositionListSerializer, ElectionListSerializer, PartylistListSerializer, CandidateListSerializer
+
+from .services.vote_cast import cast_vote
 
 class CandidateViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -220,11 +223,11 @@ class VoteViewSet(viewsets.ModelViewSet):
             return Vote.objects.all()
         elif hasattr(user, 'facilitator'):
             return Vote.objects.filter(
-                election__school=user.facilitator.school
+                election__school_year__school=user.facilitator.school
             )
         elif hasattr(user, 'student'):
             return Vote.objects.filter(
-                election__school=user.student.school
+                election__school_year__school=user.student.school
             )
 
         return Vote.objects.none()
@@ -239,21 +242,27 @@ class VoteViewSet(viewsets.ModelViewSet):
 
         return VoteListSerializer
     
-    def perform_create(self, serializer):
-        user = self.request.user
+    def create(self, request, *args, **kwargs):
 
-        if user.is_staff or hasattr(user, 'facilitator'):
-            raise serializers.ValidationError('You cannot vote')
+        serializer = VoteCreateSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
 
         student = user.student
-        course = student.course
-        year_level = student.year_level
 
-        serializer.save(
-            student=student,
-            course=course,
-            year_level=year_level,
-        )
+        election_id = serializer.validated_data['election']
+        election = Election.objects.get(id=election_id)
+
+        student_info = SchoolYearStudentInfo.objects.get(student=student,school_year=election.school_year)
+
+        vote = cast_vote(student_info=student_info,election_id=election_id,vote_items_data=serializer.validated_data['vote_items'])
+
+        return Response({'vote_id':vote.id},status=status.HTTP_201_CREATED)
 
 class CourseLevelValidItemViewSet(viewsets.ModelViewSet):
     def get_permissions(self):

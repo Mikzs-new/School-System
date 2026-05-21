@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from school.models import Registration, School, Facilitator, Student, Course, Department
+from school.models import Registration, School, Facilitator, Student, Course, Department, SchoolYearStudentInfo, SchoolYear
 
 class RegistrationCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,6 +21,11 @@ class SchoolCreateSerializer(serializers.ModelSerializer):
         if School.objects.filter(school_id=value).exists():
             raise serializers.ValidationError('School Already Exists')
         return value
+
+class SchoolYearCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SchoolYear
+        fields = ['name','school','start_date','end_date']
 
 class DepartmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -65,28 +70,32 @@ class CourseCreateSerializer(serializers.ModelSerializer):
         
         return data
 
+class StudentInfoCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SchoolYearStudentInfo
+        fields = ['school_year','student','course','year_level']
+
 class StudentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
-        fields = ['first_name','last_name','school_student_id','school','course','year_level','email']
+        fields = ['first_name','last_name','school_student_id']
 
     def validate(self, data):
-        student_school_id = data.get('school_student_id')
-        year_level = data.get('year_level')
+        school_student_id = data.get('school_student_id')
 
         request = self.context.get('request')
         user = request.user
 
         if user.is_staff:
             school = data.get('school')
-        elif hasattr(user, 'Facilitator'):
+        elif hasattr(user, 'facilitator'):
             school = user.facilitator.school
         else:
             raise serializers.ValidationError('No Permission')
 
 
-        if Student.objects.filter(student_school_id=student_school_id,school=school,year_level=year_level).exists():
-            raise serializers.ValidationError('Student record is up-to-date')
+        if Student.objects.filter(school_student_id=school_student_id,school=school).exists():
+            raise serializers.ValidationError('Student already exists')
 
         return data
 
@@ -110,3 +119,13 @@ class FacilitatorCreateSerializer(serializers.ModelSerializer):
         if Facilitator.objects.filter(school_staff_id=school_staff_id, school=school).exists():
             raise serializers.ValidationError('Staff Already Exists')
         return data
+    
+class StudentCSVRowSerializer(serializers.Serializer):
+    school_student_id = serializers.CharField(max_length=255)
+    first_name = serializers.CharField(max_length=255)
+    last_name = serializers.CharField(max_length=255)
+
+    course = serializers.IntegerField()
+    year_level = serializers.IntegerField(min_value=1)
+
+    email = serializers.EmailField()

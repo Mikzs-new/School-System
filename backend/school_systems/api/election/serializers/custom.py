@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from school.models import Student, Course
-from election.models import VoteItem, Candidate, Position, Partylist, Election, YearLevelValidItem, CourseValidItem, PartylistElection
+from election.models import VoteItem, Candidate, Position, Partylist, Election, YearLevelValidItem, CourseValidItem, PartylistElection, SchoolYearStudentInfo
 
 class SmallCourseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,7 +50,7 @@ class SmallElectionCandidatesSerializer(serializers.ModelSerializer):
         model = Election 
         fields = ['id','name','candidates']
 
-class PartylistElectionItemSerializer(serializers.ModelSerializer):
+class PartylistElectionSerializer(serializers.ModelSerializer):
     elections = SmallElectionCandidatesSerializer(read_only=True)
     class Meta:
         model = PartylistElection
@@ -70,10 +70,22 @@ class CourseValidItemSerializer(serializers.ModelSerializer):
         model = CourseValidItem
         fields = ['id','course']
 
-
 class YearLevelValidItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = YearLevelValidItem
         fields = ['id','year_level']
 
-    
+class StudentInfoSerializer(serializers.ModelSerializer):
+    student = SmallStudentSerializer(read_only=True)
+    course = SmallCourseSerializer(read_only=True)
+
+    class Meta:    
+        model = SchoolYearStudentInfo
+        fields = ['id','student','course','year_level']
+
+class StudentInfoNameSerializer(serializers.ModelSerializer):
+    student = SmallStudentSerializer(read_only=True)
+
+    class Meta:
+        model = SchoolYearStudentInfo
+        fields = ['student']

@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from election.models import Election, Position, Candidate, Partylist, Vote
 
-from .custom import VoteItemSerializer, SmallElectionSerializer, SmallCourseSerializer, YearLevelValidItemSerializer, CourseValidItemSerializer, ElectionPartylistSerializer
+from .custom import VoteItemSerializer, SmallElectionSerializer, YearLevelValidItemSerializer, CourseValidItemSerializer, ElectionPartylistSerializer, StudentInfoSerializer, SmallPositionSerializer, SmallPartylistSerializer, PartylistElectionSerializer
 
 class PositionDetailSerializer(serializers.ModelSerializer):
     election = SmallElectionSerializer(read_only=True)
@@ -11,12 +11,17 @@ class PositionDetailSerializer(serializers.ModelSerializer):
         fields = ['title','seat_count','election']
 
 class CandidateDetailSerializer(serializers.ModelSerializer):
+    student_info = StudentInfoSerializer(read_only=True)
+    election = SmallElectionSerializer(read_only=True)
+    position = SmallPositionSerializer(read_only=True)
+    partylist = SmallPartylistSerializer(read_only=True)
+
     class Meta:
         model = Candidate
-        fields = ['student','course','year_level','position','partylist']
+        fields = ['student_info','election','position','partylist']
 
 class PartylistDetailSerializer(serializers.ModelSerializer):
-    elections = serializers.SerializerMethodField()
+    elections = PartylistElectionSerializer(many=True, read_only=True)
     
     class Meta:
         model = Partylist
@@ -36,11 +41,10 @@ class ElectionDetailSerializer(serializers.ModelSerializer):
 class VoteDetailSerializer(serializers.ModelSerializer):
     vote_items = VoteItemSerializer(many=True, read_only=True)
     election = SmallElectionSerializer(read_only=True)
-    course = SmallCourseSerializer(read_only=True)
-
+    student_info = StudentInfoSerializer(read_only=True)
     class Meta:
         model = Vote
-        fields = ['id','student','course','year_level','election','vote_items']
+        fields = ['id','student_info','election','vote_items','vote_time']
 
 
     

@@ -1,16 +1,20 @@
-from rest_framework import viewsets, serializers
+from rest_framework import viewsets, serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from ..permissions.permissions import IsAdmin, CanManageModel
 
-from school.models import Registration, School, Facilitator, Student, Course, Department
+from school.models import Registration, School, Facilitator, Student, Course, Department, SchoolYear, SchoolYearStudentInfo
 
-from .serializers.create import FacilitatorCreateSerializer, SchoolCreateSerializer, StudentCreateSerializer, CourseCreateSerializer, RegistrationCreateSerializer, DepartmentCreateSerializer
+from .serializers.create import FacilitatorCreateSerializer, SchoolCreateSerializer, StudentCreateSerializer, CourseCreateSerializer, RegistrationCreateSerializer, DepartmentCreateSerializer, StudentInfoCreateSerializer
 from .serializers.detail import FacilitatorDetailSerializer, SchoolDetailSerializer, StudentDetailSerializer, CourseDetailSerializer, RegistrationDetailSerializer, DepartmentDetailSerializer
 from .serializers.list import FacilitatorListSerializer, SchoolListSerializer, StudentListSerializer, CourseListSerializer, RegistrationListSerializer, DepartmentListSerializer
 from .serializers.update import StudentUpdateSerializer, FacilitatorUpdateSerializer
+
+from .services.student_import_service import import_students_csv
+
+from api.utils.validators.create import create_user
 
 from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
@@ -19,9 +23,7 @@ from django.db import transaction
 
 User = get_user_model()
 
-from api.utils.validators.csv import validate_students_csv
-from api.utils.validators.create import create_user
-import csv
+
 
 class FacilitatorViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -250,95 +252,6 @@ class BulkStudentCSVView(APIView):
     permission_classes = [IsAuthenticated,CanManageModel]
     
     def post(self, request):
-        with transaction.atomic():
-            file = request.FILES.get('file')
-            validate_students_csv(file)
+        result = import_students_csv(file=request.FILES['file'],facilitator=request.user.facilitator, group=Group.objects.get(name='Student'))
 
-            decoded = file.read().decode('utf-8')
-
-            reader = csv.DictReader(decoded.splitlines())
-
-            create_students = []
-            error = []
-            update_students = []
-            update_users = []
-            seen_student_ids = set()
-
-            facilitator = self.request.user.facilitator
-            school = facilitator.school
-
-            existing_students = {(s.school_student_id, s.school): s for s in Student.objects.filter(school=school)}
-
-            group = Group.objects.get(name='Student')
-
-            for index,row in enumerate(reader):
-
-                row_number = index + 2
-                
-                sid = row.get('school_student_id')
-
-                if sid in seen_student_ids:
-                    error.append({'row': row_number, 'error': 'Duplicated Student'})
-                    continue
-
-                seen_student_ids.add(sid)
-
-                serializer = (StudentCreateSerializer(data=row))
-
-                if not serializer.is_valid():
-                    error.append({'row': row_number, 'error': serializer.errors})
-                    continue
-
-                validated = (serializer.validated_data)
-
-                existing_student = existing_students.get((validated['school_student_id'], school))
-                
-                if not existing_student:
-                    username = f"{school.initials.lower()}_{validated['school_student_id']}"
-                    email = validated['email']
-
-                    try:
-                        user = create_user(username,email,school,group)
-                    
-                    except serializers.ValidationError as e:
-                        error.append({'row': row_number, 'error': str(e)}) 
-                        continue
-
-                    validated['user'] = user
-                    validated['school'] = school
-                    validated['added_by'] = facilitator
-                    create_students.append(Student(**validated))
-                else: 
-                    changed = False
-                    for field,value in validated.items():
-                        current = getattr(existing_student, field)
-
-                        if current != value:
-                            setattr(existing_student, field, value)
-                            if field == 'email' and existing_student.user.email != value:
-                                existing_student.user.email = value
-                                update_users.append(existing_student.user)
-                            changed = True
-
-                    if changed:
-                        update_students.append(existing_student)
-                    
-
-            Student.objects.bulk_create(create_students)
-            
-            Student.objects.bulk_update(
-                update_students,
-                ['school_student_id','first_name','last_name','course','year_level','email']
-            )
-            User.objects.bulk_update(
-                update_users,
-                ['email']
-            )
-
-            context = {
-                'Errors': error,
-                'Updated': len(update_students),
-                'Created': len(create_students)
-            }
-
-            return  Response(context,status=200)
+        return Response(result,status=status.HTTP_200_OK)
