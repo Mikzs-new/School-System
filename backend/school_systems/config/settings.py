@@ -46,9 +46,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
 
-    'school',
-    'election',
-    'accounts',
+    'apps.authentication.apps.AuthenticationConfig',
+    'apps.election.apps.ElectionConfig',
+    'apps.school.apps.SchoolConfig',
+    'apps.student.apps.StudentConfig',
 ]
 
 MIDDLEWARE = [
@@ -100,7 +101,7 @@ DATABASES = {
 }
 
 
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = 'authentication.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -170,4 +171,4 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
 EMAIL_USE_TLS = os.getenv('EMAIL_TLS', 'False') == 'True'
 
-EMAIL_BACKEND = 'backends.email_backend.EmailBackend'
+EMAIL_BACKEND = 'shared.utils.email.email_backend.EmailBackend'
