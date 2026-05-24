@@ -179,7 +179,7 @@ class PartylistViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can create position")
+            raise PermissionDenied("Only staff can create partylist")
 
         school_staff_profile = request.user.school_staff_profile
 
@@ -258,7 +258,7 @@ class ElectionEligibleCourseViewSet(viewsets.GenericViewSet, mixins.CreateModelM
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can create elections")
+            raise PermissionDenied("Only staff can add eligible courses")
 
         school_staff_profile = request.user.school_staff_profile
 
@@ -284,7 +284,7 @@ class ElectionEligibleYearLevelViewSet(viewsets.GenericViewSet, mixins.CreateMod
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can create elections")
+            raise PermissionDenied("Only staff can add eligible year level")
 
         school_staff_profile = request.user.school_staff_profile
 
@@ -310,7 +310,7 @@ class PartylistElectionViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin)
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can create elections")
+            raise PermissionDenied("Only staff can add eligible election partylist")
 
         school_staff_profile = request.user.school_staff_profile
 
