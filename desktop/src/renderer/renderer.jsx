@@ -12,7 +12,7 @@ import { createRoot } from 'react-dom/client';
 import {
   BookOpen,
   Building2,
-  ClipboardList,
+  BarChart3,
   GraduationCap,
   Landmark,
   LayoutDashboard,
@@ -65,9 +65,8 @@ const ROLE_ROUTES = {
     'dashboard', 'schools', 'departments', 'courses', 'students',
     'facilitators', 'elections', 'partylists', 'candidates', 'votes', 'voting'
   ],
-  staff: [
-    'dashboard', 'schools', 'departments', 'courses', 'students',
-    'facilitators', 'elections', 'partylists', 'candidates', 'votes'
+  facilitator: [
+    'dashboard', 'students', 'elections', 'partylists', 'candidates', 'votes'
   ],
   student: ['dashboard', 'candidates', 'partylists', 'elections', 'voting']
 };
@@ -84,6 +83,8 @@ function App() {
   const visibleRoutes = ROLE_ROUTES[user.role] || ROLE_ROUTES.student;
   const activeRoute   = ROUTES[activeView] || ROUTES.dashboard;
   const ActiveComponent = activeRoute.component;
+  const userDisplayName = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.username || 'Voter';
+  const roleLabel = user.role === 'facilitator' ? 'Facilitator' : user.role || 'Student';
 
   // Redirect if permission is revoked mid-session
   useEffect(() => {
@@ -120,7 +121,7 @@ function App() {
           <span className="brand-mark">SV</span>
           <div>
             <strong>School Voting</strong>
-            <span>Desktop</span>
+            <span>Election Management</span>
           </div>
         </div>
 
@@ -146,8 +147,8 @@ function App() {
         <div className="sidebar-footer">
           <div className="signed-in">
             <span>Signed in as</span>
-            <strong>{user.username || user.name || 'Voter'}</strong>
-            <span>{user.role || 'student'}</span>
+            <strong>{userDisplayName}</strong>
+            <span>{roleLabel}</span>
           </div>
           <button className="logout-button" type="button" onClick={handleLogout}>
             <LogOut size={18} />
@@ -157,6 +158,16 @@ function App() {
       </aside>
 
       <main className="content">
+        <header className="topbar">
+          <div>
+            <span className="eyebrow">Academic voting system</span>
+            <h2>{activeRoute.label}</h2>
+          </div>
+          <div className="topbar-meta">
+            <BarChart3 size={18} />
+            <span>{roleLabel} workspace</span>
+          </div>
+        </header>
         {authState.notice && (
           <div className="status-banner error page-notice">{authState.notice}</div>
         )}
