@@ -1,10 +1,13 @@
 from rest_framework import serializers
 
+from django.db import transaction
+
 from django.contrib.auth import get_user_model
 from django.utils.crypto import get_random_string
 
 User = get_user_model()
 
+@transaction.atomic
 def create_user(username,email,group):
     password = get_random_string(12)
 

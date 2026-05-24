@@ -70,6 +70,10 @@ class Election(TimeStampedModel):
             raise ValidationError('Election must be within school year')
     
     @property
+    def is_editable(self):
+        return self.status == ElectionStatus.DRAFTED
+
+    @property
     def is_active(self):
         if self.status != ElectionStatus.ENABLED:
             return False

@@ -32,17 +32,17 @@ class CandidateCreateSerializer(serializers.ModelSerializer):
 class PartylistCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Partylist
-        fields = ['name','description']
+        fields = ['name']
     
-class ElectionEligiblePartylistCreateSerializer(serializers.ModelSerializer):
+class PartylistElectionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PartylistElection
-        fields = ['partylist','election']
+        fields = ['description','partylist','election']
 
 class ElectionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Election
-        fields = ['name','description','start_datetime','duration']
+        fields = ['name','description','start_datetime','end_datetime']
 
 class VoteItemInputSerialzer(serializers.Serializer):
     candidate = serializers.PrimaryKeyRelatedField(
