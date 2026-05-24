@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError
+from rest_framework.serializers import ValidationError
 from django.db import transaction
 
 from apps.election.models.election import Election

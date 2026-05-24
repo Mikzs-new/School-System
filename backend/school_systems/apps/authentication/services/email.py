@@ -18,10 +18,12 @@ def send_password_reset_email(user):
     
     account = user.email
     
-    if hasattr(user, 'facilitator'):
-        name = user.facilitator.first_name
-    if hasattr(user, 'student'):
-        name = user.student.first_name
+    name = user.username
+
+    if hasattr(user, 'school_staff_profile'):
+        name = user.school_staff_profile.first_name
+    if hasattr(user, 'student_profile'):
+        name = user.student_profile.first_name
     
     
     send_mail(
@@ -41,5 +43,4 @@ def send_password_reset_email(user):
          fail_silently=False
     )
     
-    return
 

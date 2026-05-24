@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.core.exceptions import ValidationError
+from rest_framework.serializers import ValidationError
 
 from apps.student.models.student_enrollment import StudentEnrollment
 from shared.utils.helper.school import get_current_school_year, is_current_school_year_active
