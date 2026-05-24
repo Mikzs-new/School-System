@@ -8,7 +8,7 @@ router = DefaultRouter()
 
 router.register(r'enroll', views.StudentEnrollmentViewset, basename='enroll')
 router.register(r'records', views.StudentViewSet, basename='students')
-router.register(r'import/student-csv', views.BulkStudentCSVViewset,basename='student-csv')
+router.register(r'student-csv', views.BulkStudentCSVViewset,basename='student-csv')
 urlpatterns = [
     path('', include(router.urls))
 ]

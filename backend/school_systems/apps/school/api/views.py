@@ -11,13 +11,11 @@ from apps.school.models.school_year import SchoolYear
 
 from .serializers.create import SchoolCreateSerializer, CourseCreateSerializer,DepartmentCreateSerializer, SchoolYearCreateSerializer
 from .serializers.detail import SchoolDetailSerializer, CourseDetailSerializer, DepartmentDetailSerializer, SchoolYearDetailSerializer
-from .serializers.list import SchoolListSerializer, CourseListSerializer, RegistrationListSerializer, DepartmentListSerializer, SchoolYearListSerializer
-
-from shared.utils.helper.school import get_user_school
+from .serializers.list import SchoolListSerializer, CourseListSerializer, DepartmentListSerializer, SchoolYearListSerializer
 
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
 
+from apps.school.services.school_year_service import create_school_year
 
 class DepartmentViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -44,10 +42,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
             return DepartmentListSerializer
         
         return DepartmentListSerializer
-    
-    def perform_create(self, serializer):
-        
-        return super().perform_create(serializer)
+
 
 class CourseViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
@@ -110,4 +105,16 @@ class SchoolYearViewSet(viewsets.GenericViewSet,
         return SchoolYearListSerializer
 
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        if not hasattr(request.user, 'school_staff_profile'):
+            raise PermissionDenied("Only staff can create school year")
+
+        school_staff_profile = request.user.school_staff_profile
+        school_year = create_school_year(school_staff_profile=school_staff_profile,**serializer.validated_data)
+
+        return Response({'message':'School year created', 'id': school_year.id}, status=status.HTTP_201_CREATED)
