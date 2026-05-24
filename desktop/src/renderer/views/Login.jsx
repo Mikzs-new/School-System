@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LockKeyhole, ShieldCheck, UserRound } from 'lucide-react';
 import { login } from '../api/auth.js';
 
 export default function Login({ onAuthenticated }) {
@@ -29,9 +30,10 @@ export default function Login({ onAuthenticated }) {
     <main className="login-page">
       <section className="login-panel" aria-labelledby="login-title">
         <div className="login-heading">
+          <span className="brand-mark large">SV</span>
           <div>
             <h1 id="login-title">School Voting</h1>
-            <p>Login</p>
+            <p>Sign in to the academic election workspace</p>
           </div>
         </div>
 
@@ -39,6 +41,7 @@ export default function Login({ onAuthenticated }) {
           <label>
             <span>Username</span>
             <div className="input-frame">
+              <UserRound size={18} />
               <input
                 autoComplete="username"
                 autoFocus
@@ -54,6 +57,7 @@ export default function Login({ onAuthenticated }) {
           <label>
             <span>Password</span>
             <div className="input-frame">
+              <LockKeyhole size={18} />
               <input
                 autoComplete="current-password"
                 name="password"
@@ -68,6 +72,7 @@ export default function Login({ onAuthenticated }) {
           {error ? <div className="error-banner">{error}</div> : null}
 
           <button className="primary-button full-width" disabled={isSubmitting} type="submit">
+            <ShieldCheck size={18} />
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>

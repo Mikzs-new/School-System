@@ -4,7 +4,8 @@ import { hasPermission } from '../state/permissionGuard.js';
 export default function Dashboard({ routes, user, visibleRouteKeys, onNavigate }) {
   const displayName = user?.name || user?.full_name || user?.username || 'Voter';
   const availableRoutes = visibleRouteKeys.filter((routeKey) => routeKey !== 'dashboard' && routes[routeKey]);
-  const canUseOperations = user?.role === 'admin' || user?.role === 'staff';
+  const canUseOperations = user?.role === 'admin' || user?.role === 'facilitator';
+  const roleLabel = user?.role === 'facilitator' ? 'Facilitator' : user?.role || 'Student';
 
   return (
     <section className="page-stack" aria-labelledby="dashboard-title">
@@ -26,11 +27,12 @@ export default function Dashboard({ routes, user, visibleRouteKeys, onNavigate }
 
       <div className="dashboard-band">
         <div>
-          <h2>{canUseOperations ? 'Admin session' : 'Voting session'}</h2>
+          <span className="eyebrow">{roleLabel} access</span>
+          <h2>{canUseOperations ? 'Operations dashboard' : 'Voting dashboard'}</h2>
           <p>
             {canUseOperations
-              ? 'Choose a module from the menu.'
-              : 'Use the voting screen to submit your vote.'}
+              ? 'Monitor elections, validate records, and manage permitted academic voting modules.'
+              : 'Review active election details and open the voting page when participation is available.'}
           </p>
         </div>
       </div>

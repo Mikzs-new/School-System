@@ -2,7 +2,7 @@
  * src/renderer/api/auth.js
  *
  * Login / logout helpers.
- * Token endpoint: POST /api/token/  (simplejwt TokenObtainPairView)
+ * Token endpoint: POST /api/v1/auth/login/
  * Returns: { access, refresh }
  */
 
@@ -27,8 +27,14 @@ async function lookupDbUser(username, userId) {
   }
 }
 
+function normalizeRole(role, user = {}) {
+  if (role === 'school_staff' || role === 'staff' || role === 'facilitator') return 'facilitator';
+  if (role === 'admin' || user?.is_superuser || user?.is_staff) return 'admin';
+  return 'student';
+}
+
 async function normalizeAuth(data, inputUsername) {
-  // simplejwt returns { access, refresh }
+  // Backend login returns { access, refresh, role }.
   const token = data?.access || data?.token || data?.access_token || data?.key;
   if (!token) throw new Error('Login succeeded but no auth token was returned by the API.');
 
@@ -45,15 +51,14 @@ async function normalizeAuth(data, inputUsername) {
     email: dbUser?.email,
     is_superuser: dbUser?.is_superuser ?? payload.is_superuser,
     is_staff: dbUser?.is_staff ?? payload.is_staff,
-    role: dbUser?.role || payload.role
+    role: normalizeRole(data?.role || dbUser?.role || payload.role, dbUser || payload)
   };
 
-  const role = user.role;
-  return { token, user, role };
+  return { token, user, role: user.role };
 }
 
 export async function login({ username, password }) {
-  const res = await apiClient.post('/api/token/', { username, password });
+  const res = await apiClient.post('/api/v1/auth/login/', { username, password });
   const auth = await normalizeAuth(res.data, username);
   authStore.setAuth(auth);
   return auth;

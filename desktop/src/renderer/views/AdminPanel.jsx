@@ -4,7 +4,7 @@ import { getCandidates, getVotes } from '../api/voting.js';
 import { hasRole } from '../state/roleGuard.js';
 
 export default function AdminPanel({ user }) {
-  const canUseAdminTools = hasRole(user, ['admin', 'staff']);
+  const canUseAdminTools = hasRole(user, ['admin', 'facilitator']);
   const [activeTool, setActiveTool] = useState('candidates');
   const [candidates, setCandidates] = useState([]);
   const [votes, setVotes] = useState([]);

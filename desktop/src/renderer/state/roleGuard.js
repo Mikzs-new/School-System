@@ -9,4 +9,4 @@ export function hasRole(user, roles) {
 }
 
 export const isAdmin = (user) => hasRole(user, 'admin');
-export const isStaff = (user) => hasRole(user, 'staff');
+export const isStaff = (user) => hasRole(user, ['facilitator', 'staff']);
