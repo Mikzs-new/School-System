@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.core.exceptions import ValidationError
+from rest_framework.serializers import ValidationError
 
 from apps.school.models.school_year import SchoolYear
 

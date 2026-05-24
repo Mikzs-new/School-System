@@ -8,7 +8,7 @@ from shared.permissions.user_permissions import CanManageModel
 from .serializers.auth.reset_password import ResetPasswordSerializer
 from .serializers.auth.forgot_password import ForgotPasswordSerializer
 from .serializers.auth.login import LoginSerializer
-from .serializers.profile.create import SchoolStaffProfileCreateSerializer
+from .serializers.profile.create import SchoolStaffProfileCreateSerializer, StudentProfileCreateSerializer
 from .serializers.profile.detail import StudentProfileDetailSerializer, SchoolStaffDetailSerializer
 from .serializers.profile.list import StudentProfileListSerializer, SchoolStaffProfileListSerializer
 
@@ -16,11 +16,19 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from ..services.email import send_password_reset_email
 
+from apps.authentication.models.school_staff_profile import SchoolStaffProfile
+from apps.authentication.models.student_profile import StudentProfile
+
+from apps.authentication.services.school_staff_service import SchoolStaffService
+from apps.authentication.services.student_service import StudentService
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 class ResetPasswordAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
 
@@ -29,11 +37,18 @@ class ResetPasswordAPIView(APIView):
         serializer.save()
 
         return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
-    
+
 class ForgotPasswordAPIView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
     def post(self, request):
-        serializer = ForgotPasswordSerializer(request.data)
+        if not request.data:
+            return Response(
+                {'error': 'No email sent'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = ForgotPasswordSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 
@@ -45,10 +60,11 @@ class ForgotPasswordAPIView(APIView):
         except User.DoesNotExist:
             pass
 
-        return request({'message':'If account exists, email was sent.'}, status=status.HTTP_200_OK)
+        return Response({'message':'If account exists, email was sent.'}, status=status.HTTP_200_OK)
     
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
     
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -87,24 +103,60 @@ class StudentProfileViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated(),CanManageModel()]
     
     def get_queryset(self):
-        return super().get_queryset()
+        user = self.request.user
+
+        if user.is_staff:
+            return StudentProfile.objects.all()
+        elif hasattr(user, 'school_staff_profile'):
+            return StudentProfile.objects.filter(school=user.school_staff_profile.school)
+        elif hasattr(user, 'student_profile'):
+            return StudentProfile.objects.filter(school=user.student_profile.school, school_student_id=user.student_profile.school_student_id)
+
+        return StudentProfile.objects.none()
     
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return StudentProfileDetailSerializer
+        elif self.action == 'create':
+            return StudentProfileCreateSerializer
         elif self.action == 'list':
             return StudentProfileListSerializer
         return StudentProfileListSerializer
     
-    def perform_create(self, serializer):
-        return super().perform_create(serializer)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+
+        if user.is_staff:
+            school_staff_profile = None
+        elif hasattr(user, 'school_staff_profile'):
+            school_staff_profile = user.school_staff_profile
+
+        student_profile = StudentService.create_student_profile(
+            school_staff_profile=school_staff_profile,
+            **serializer.validated_data
+        )
+
+        return Response({'message':'Student profile created', 'id': student_profile.id}, status=status.HTTP_201_CREATED)
 
 class SchoolStaffProfileViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         return [IsAuthenticated(),CanManageModel()]
     
     def get_queryset(self):
-        return super().get_queryset()
+        user = self.request.user
+
+        if user.is_staff:
+            return SchoolStaffProfile.objects.all()
+        elif hasattr(user, 'school_staff_profile'):
+            return SchoolStaffProfile.objects.filter(school=user.school_staff_profile.school)
+
+        return SchoolStaffProfile.objects.none()
     
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -115,5 +167,23 @@ class SchoolStaffProfileViewSet(viewsets.ModelViewSet):
             return SchoolStaffProfileListSerializer
         return SchoolStaffProfileListSerializer
     
-    def perform_create(self, serializer):
-        return super().perform_create(serializer)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+
+        if user.is_staff:
+            school_staff_profile = None
+        elif hasattr(user, 'school_staff_profile'):
+            school_staff_profile = user.school_staff_profile
+
+        school_staff = SchoolStaffService.create_school_staff_profile(
+            school_staff_profile=school_staff_profile,
+            **serializer.validated_data
+        )
+
+        return Response({'message':'School staff profile created', 'id': school_staff.id}, status=status.HTTP_201_CREATED)

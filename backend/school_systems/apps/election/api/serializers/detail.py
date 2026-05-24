@@ -42,7 +42,7 @@ class ElectionDetailSerializer(serializers.ModelSerializer):
     valid_year_levels = ElectionEligibleYearLevelSerializer(many=True, read_only=True)
     candidates = CandidateDetailSerializer(many=True, read_only=True)
     partylists = SmallElectionPartylistSerializer(many=True, read_only=True)
-
+    
     class Meta:
         model = Election
         fields = ['id', 'name', 'valid_courses', 'valid_year_levels', 'positions','partylists','candidates']

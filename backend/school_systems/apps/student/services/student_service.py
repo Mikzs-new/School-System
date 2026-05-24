@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.core.exceptions import ValidationError
+from rest_framework.serializers import ValidationError
 
 from apps.authentication.models.student_profile import StudentProfile
 
@@ -25,7 +25,7 @@ class StudentService:
         if StudentProfile.objects.filter(school=school,school_student_id=school_student_id).exists():
             raise ValidationError('Student already exists in records, add new enrollment instead')
 
-        username = f'{school.initials}_{school_student_id}'
+        username = f'{school.initials.lower()}_{school_student_id}'
         email = validated_data['email']
         first_name = validated_data['first_name']
         last_name = validated_data['last_name']
