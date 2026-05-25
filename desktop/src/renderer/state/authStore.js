@@ -25,10 +25,12 @@ function readStored() {
 }
 
 function inferRole(user, role) {
+  if (role === 'school_staff' || role === 'staff') return 'facilitator';
   if (role) return role;
+  if (user?.role === 'school_staff' || user?.role === 'staff') return 'facilitator';
   if (user?.role) return user.role;
   if (user?.is_superuser) return 'admin';
-  if (user?.is_staff) return 'staff';
+  if (user?.is_staff) return 'admin';
   return 'student';
 }
 
