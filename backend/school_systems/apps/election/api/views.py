@@ -1,7 +1,7 @@
 from rest_framework import viewsets,status, mixins
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.serializers import ValidationError
 from rest_framework.decorators import action
 
@@ -26,7 +26,7 @@ from apps.election.services.partylist_services import PartylistService
 from apps.election.selectors.election_selectors import ElectionSelector
 
 class CandidateViewSet(viewsets.ModelViewSet):
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     def get_permissions(self):
 
         if self.action in ['list','retrieve']:
