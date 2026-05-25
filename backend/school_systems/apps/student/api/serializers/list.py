@@ -11,7 +11,7 @@ class StudentListSerializer(serializers.ModelSerializer):
     enrollments = SmallStudentInfoSerializer(read_only=True)
     class Meta:
         model = StudentProfile
-        fields = ['id','full_name','student_id','enrollments']
+        fields = ['id','full_name','school_student_id','enrollments']
 
 class StudentEnrollmentListSerializer(serializers.ModelSerializer):
     student = SmallStudentSerializer(many=True,read_only=True)

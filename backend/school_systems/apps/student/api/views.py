@@ -34,7 +34,7 @@ class StudentViewSet(viewsets.ModelViewSet):
         queryset = (
         StudentProfile.objects
             .select_related('school', 'user')
-            .prefetch_related('enrollments')
+            .prefetch_related('school_years')
         )
 
         if user.is_staff:
@@ -49,7 +49,8 @@ class StudentViewSet(viewsets.ModelViewSet):
         elif hasattr(user, 'student_profile'):
 
             return queryset.filter(
-                id=user.student_profile.id
+                school=user.student_profile.school,
+                school_student_id=user.student_profile.school_student_id
             )
 
         return StudentProfile.objects.none()
