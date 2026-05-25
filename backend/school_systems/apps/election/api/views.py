@@ -191,12 +191,11 @@ class PartylistViewSet(viewsets.ModelViewSet):
         return Response({'message':'Partylist created', 'id': partylist.id}, status=status.HTTP_201_CREATED)
     
 class ElectionViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), CanManageElection()]
 
-        return super().get_permissions()
+        return [IsAuthenticated()]
     
     def get_queryset(self):
         user = self.request.user

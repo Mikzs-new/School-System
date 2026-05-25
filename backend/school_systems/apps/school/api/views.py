@@ -92,8 +92,19 @@ class SchoolYearViewSet(viewsets.GenericViewSet,
                         mixins.ListModelMixin):
     permission_classes = [IsAuthenticated,CanManageSchoolData]
 
+    def get_permissions(self):
+        if self.action in ['list','retrieve']:
+            return [IsAuthenticated(), CanManageModel()]
+        
+        return super().get_permissions()
+
     def get_queryset(self):
-        return super().get_queryset()
+        user = self.request.user
+
+        if hasattr(user, 'school_staff_profile'):
+            return SchoolYear.objects.filter(school=user.school_staff_user.school)
+        
+        return SchoolYear.objects.none()
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

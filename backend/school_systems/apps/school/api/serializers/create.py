@@ -5,8 +5,6 @@ from apps.school.models.course import Course
 from apps.school.models.department import Department
 from apps.school.models.school_year import SchoolYear
 
-from shared.utils.helper.school import get_user_school
-
 class SchoolCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
