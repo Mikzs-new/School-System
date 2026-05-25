@@ -5,7 +5,6 @@ import {
   ArrowLeft
 } from "lucide-react";
 
-import api from "../api/apiClient";
 
 export default function ForgotPassword({
   onBack
@@ -36,12 +35,40 @@ export default function ForgotPassword({
 
     try {
 
-      const response =
-        await api.post(
-          "/auth/forgot_password/",
+      const response = await fetch(
+          "http://localhost:8000/api/v1/auth/forgot_password/",
           {
-            email
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              email
+            })
           }
+        );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+
+          throw new Error(
+
+            data.detail ||
+
+            data.message ||
+
+            JSON.stringify(data)
+          );
+        }
+
+        setMessage(
+          data.message ||
+          "If account exists, email was sent."
         );
 
       setMessage(
@@ -49,20 +76,7 @@ export default function ForgotPassword({
         "If account exists, email was sent."
       );
 
-    } catch (error) {
-
-      console.error(error);
-
-      setError(
-
-        error.response?.data?.detail ||
-
-        error.response?.data?.message ||
-
-        "Unable to process request."
-      );
-
-    } finally {
+    }finally {
 
       setLoading(false);
     }

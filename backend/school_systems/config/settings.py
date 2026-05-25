@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'apps.election.apps.ElectionConfig',
     'apps.school.apps.SchoolConfig',
     'apps.student.apps.StudentConfig',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -68,9 +69,22 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
+<<<<<<< HEAD
     "http://localhost:5173",
     "http://127.0.0.1:8000"
+=======
+     "http://localhost:5173",
+    "http://127.0.0.1:5173",
+
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+>>>>>>> 6d54f26 (update project)
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'config.urls'
 
