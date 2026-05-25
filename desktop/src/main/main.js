@@ -26,7 +26,15 @@ function loadEnv() {
 }
 
 function getApiUrl() {
-  return (process.env.API_URL || process.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
+
+  return (
+    process.env.API_URL ||
+
+    process.env.VITE_API_URL ||
+
+    'http://127.0.0.1:8000/api/v1'
+
+  ).replace(/\/+$/, '');
 }
 
 function assertAllowedBackend(baseURL) {

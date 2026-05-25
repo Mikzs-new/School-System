@@ -69,10 +69,6 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-<<<<<<< HEAD
-    "http://localhost:5173",
-    "http://127.0.0.1:8000"
-=======
      "http://localhost:5173",
     "http://127.0.0.1:5173",
 
@@ -81,7 +77,6 @@ CORS_ALLOWED_ORIGINS = [
 
     "http://localhost:8000",
     "http://127.0.0.1:8000",
->>>>>>> 6d54f26 (update project)
 ]
 
 CORS_ALLOW_CREDENTIALS = True

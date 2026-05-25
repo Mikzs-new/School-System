@@ -36,7 +36,7 @@ class ElectionSelector:
                     valid_year_levels__year_level=enrollment.year_level
                 )
 
-            return qs.objects.filter(query).distinct()
+            return qs.filter(query).distinct()
         
         return qs.none()
 

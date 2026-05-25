@@ -42,7 +42,7 @@ class ElectionService:
         if school_staff_profile.school != election.school_year.school:
             raise ValidationError('Cannot modify another school election')
         
-        if not election.is_editable():
+        if not election.is_editable:
             raise ValidationError('Cannot make changes in election')
         
         eligible_year_level = ElectionEligibleYearLevel(
@@ -62,7 +62,7 @@ class ElectionService:
         if school_staff_profile.school != election.school_year.school:
             raise ValidationError('Cannot modify another school election')
         
-        if not election.is_editable():
+        if not election.is_editable:
             raise ValidationError('Cannot make changes in election')
         
         eligible_course = ElectionEligibleCourse(
@@ -82,7 +82,7 @@ class ElectionService:
         if school_staff_profile.school != election.school_year.school:
             raise ValidationError('Cannot modify another school election')
 
-        if not election.is_editable():
+        if not election.is_editable:
             raise ValidationError('Cannot make changes in election')
         
         title=title.strip().lower()
@@ -104,7 +104,7 @@ class ElectionService:
         if election.school_year.school != partylist.school or school_staff_profile != partylist.school  or school_staff_profile.school != election.school_year.school:
             raise ValidationError('Cannot modify another school election')
         
-        if not election.is_editable():
+        if not election.is_editable:
             raise ValidationError('Cannot make changes in election')
         
         eligible_partylist = PartylistElection(

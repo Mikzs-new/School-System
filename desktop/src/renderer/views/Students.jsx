@@ -18,6 +18,19 @@ export default function Students() {
   const [loading, setLoading] =
     useState(true);
 
+  const [showModal, setShowModal] =
+    useState(false);
+
+  const [formData, setFormData] =
+  useState({
+    first_name: "",
+    last_name: "",
+    school_student_id: "",
+    email: "",
+    course: "",
+    department: ""
+  });
+
   useEffect(() => {
     fetchStudents();
   }, []);
@@ -90,6 +103,43 @@ export default function Students() {
     }
   }
 
+  async function handleSubmit(event) {
+
+    event.preventDefault();
+
+    try {
+
+      await api.post(
+        "/api/v1/student/records/",
+        formData
+      );
+
+      await fetchStudents();
+
+      setShowModal(false);
+
+      setFormData({
+        first_name: "",
+        last_name: "",
+        school_student_id: "",
+        email: ""
+      });
+
+      alert(
+        "Student added successfully"
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        error?.response?.data?.detail ||
+        "Failed to add student"
+      );
+    }
+  }
+
   return (
 
     <div className="student-workspace">
@@ -130,7 +180,12 @@ export default function Students() {
 
           </label>
 
-          <button className="workspace-primary-btn">
+          <button
+            className="workspace-primary-btn"
+            onClick={() =>
+              setShowModal(true)
+            }
+          >
 
             <Plus size={18} />
 
@@ -141,6 +196,114 @@ export default function Students() {
         </div>
 
       </div>
+
+      {/* MODAL */}
+
+      {showModal && (
+
+        <div className="modal-overlay">
+
+          <div className="modal-card">
+
+            <h2>Add Student</h2>
+
+            <form onSubmit={handleSubmit}>
+
+              <input
+                type="text"
+                placeholder="First Name"
+                value={formData.first_name}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    first_name: e.target.value
+                  })
+                }
+              />
+
+              <input
+                type="text"
+                placeholder="Last Name"
+                value={formData.last_name}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    last_name: e.target.value
+                  })
+                }
+              />
+
+              <input
+                type="text"
+                placeholder="Student ID"
+                value={formData.school_student_id}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    school_student_id:
+                      e.target.value
+                  })
+                }
+              />
+
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    email: e.target.value
+                  })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Course"
+                value={formData.course}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    course: e.target.value
+                  })
+                }
+              />
+
+              <input
+                type="text"
+                placeholder="Department"
+                value={formData.department}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    department: e.target.value
+                  })
+                }
+              />
+              <div className="modal-actions">
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowModal(false)
+                  }
+                >
+                  Cancel
+                </button>
+
+                <button type="submit">
+                  Add Student
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      )}
 
       {/* SEARCH */}
 
