@@ -327,7 +327,8 @@ textarea:focus {
 .topbar-meta {
   align-items: center;
   display: inline-flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .page-header {
@@ -526,8 +527,11 @@ button.tool-card:hover {
 .error-banner,
 .status-banner,
 .empty-state {
+  align-items: center;
   border-radius: 14px;
   border: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
   padding: 12px 14px;
 }
 
@@ -552,6 +556,51 @@ button.tool-card:hover {
 
 .page-notice {
   margin-bottom: 14px;
+}
+
+.connection-pill {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  display: inline-flex;
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 12px;
+}
+
+.connection-pill.online {
+  background: var(--success-bg);
+  border-color: #bbf7d0;
+  color: var(--success);
+}
+
+.connection-pill.offline {
+  background: var(--danger-bg);
+  border-color: #fecaca;
+  color: var(--danger);
+}
+
+.loading-state {
+  align-items: center;
+  background: var(--background);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+  display: flex;
+  gap: 10px;
+  padding: 14px;
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 960px) {
