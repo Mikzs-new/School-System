@@ -63,6 +63,3 @@ class VoteItem(models.Model):
             ),
         )
     
-    def clean(self):
-        if self.position != self.candidate.position:
-            raise ValidationError('Candidate does not belong to this position')

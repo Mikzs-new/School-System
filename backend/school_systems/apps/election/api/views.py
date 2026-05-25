@@ -7,14 +7,14 @@ from rest_framework.decorators import action
 
 from shared.permissions.user_permissions import CanManageElection, CanVote
 
-from apps.election.models.election import Election
+from apps.election.models.election import Election, ElectionStatus
 from apps.election.models.candidate import Candidate
 from apps.election.models.eligibility import PartylistElection, ElectionEligiblePosition, ElectionEligibleCourse, ElectionEligibleYearLevel
 from apps.election.models.partylist import Partylist
 from apps.election.models.vote import Vote
 
 from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, ElectionEligiblePositionCreateSerializer, VoteCreateSerializer, PartylistElection, ElectionEligibleCourseCreateSerializer, ElectionEligibleYearLevelCreateSerializer, PartylistElectionCreateSerializer
-from .serializers.detail import ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer
+from .serializers.detail import ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer, ElectionResultSerialzer
 from .serializers.list import ElectionListSerializer, PartylistListSerializer, CandidateListSerializer
 from .serializers.update import ElectionUpdateSerializer
 
@@ -240,18 +240,35 @@ class ElectionViewSet(viewsets.ModelViewSet):
     def end_election(self, request, pk=None):
         election = self.get_object()
 
+        if election.status == ElectionStatus.DRAFTED:
+            raise ValidationError('Election has not started yet')
+    
         if election.status == Election.Status.ENDED:
             raise ValidationError("Election already ended")
+
+        user = request.user
+
+        if not hasattr(user, 'school_staff_profile'):
+            raise ValidationError('User has no permission')
 
         election.status = Election.Status.ENDED
         election.save()
 
-        ElectionService.generate_snapshot(election)
+        election_snapshot = ElectionService.generate_snapshot(schooL_staff_profile=user.school_staff_profile,election=election)
 
-        return Response({
-            "message": "Election ended successfully"
-        })
+        return Response({"message": "Election ended and records saved successfully", "id": election_snapshot.id},status=status.HTTP_202_ACCEPTED)
     
+    @action(detail=True, methods=['get'])
+    def results(self, request, pk=None):
+        election = self.get_object()
+
+        if election.status != ElectionStatus.ENDED:
+            raise ValidationError('Election results are not avaliable yet')
+        
+        serializer = ElectionResultSerializer(election)
+
+        return Response(serializer.data)
+
 class ElectionEligibleCourseViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
     permission_classes = [IsAuthenticated, CanManageElection]
 

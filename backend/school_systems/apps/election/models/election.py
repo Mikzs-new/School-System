@@ -13,7 +13,6 @@ class ElectionStatus(models.TextChoices):
     PAUSED = 'paused', 'Paused'
     CANCELLED = 'cancelled', 'Cancelled'
     ENDED = 'ended', 'Ended'
-    HIDDEN = 'hidden', 'Hidden'
     DRAFTED = 'drafted', 'Drafted'
 
 class Election(TimeStampedModel):
@@ -84,7 +83,7 @@ class Election(TimeStampedModel):
     @property
     def has_started(self):
         return timezone.now() >= self.start_datetime
-    
+    @property
     def has_ended(self):
         return timezone.now() > self.end_datetime
 
