@@ -88,7 +88,14 @@ class StudentEnrollmentViewset(viewsets.GenericViewSet, mixins.CreateModelMixin)
     serializer_class = StudentEnrollmentCreateSerializer
 
     def get_queryset(self):
-        return super().get_queryset()
+        user = self.request.user 
+
+        if user.is_staff:
+            return StudentEnrollment.objects.all()
+        elif hasattr(user, 'school_staff_profile'):
+            return StudentEnrollment.objects.filter(school_year__school=user.school_staff_profile.school)
+        
+        return StudentEnrollment.objects.none()
     
     def create(self,request):
         serializer = self.get_serializer(data=request.data)
