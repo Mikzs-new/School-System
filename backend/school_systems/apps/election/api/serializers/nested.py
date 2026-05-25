@@ -14,6 +14,12 @@ class SmallPartylistSerializer(serializers.ModelSerializer):
         model = Partylist
         fields = ['name']
 
+class SmallPartylistElectionSerializer(serializers.ModelSerializer):
+    partylist = SmallPartylistSerializer(read_only=True)
+    class Meta:
+        model = PartylistElection
+        fields = ['partylist']
+
 class SmallPositionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElectionEligiblePosition
@@ -60,13 +66,14 @@ class ElectionEligibleYearLevelSerializer(serializers.ModelSerializer):
         fields = ['id','year_level']
 
 class SmallElectionPartylistSerializer(serializers.ModelSerializer):
-    partylist = serializers.CharField(
-        source='partylist.name',
-        read_only=True
-    )
+    partylist = serializers.SerializerMethodField()
+
     class Meta:
         model = PartylistElection
-        fields = ['partylist']
+        fields = ['partylist', 'description']
+
+    def get_partylist(self, obj):
+        return SmallPartylistSerializer(obj.partylist).data
 
 class PartylistElectionSerializer(serializers.ModelSerializer):
     election = SmallPartylistSerializer(read_only=True)

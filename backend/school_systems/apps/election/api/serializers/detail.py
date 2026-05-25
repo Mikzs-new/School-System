@@ -9,7 +9,7 @@ from apps.election.models.vote import Vote
 
 from apps.analytics.models import ElectionAnalyticsSnapshot, CandidateAnalyticsSnapshot
 
-from .nested import VoteItemSerializer, SmallElectionSerializer, ElectionEligibleYearLevelSerializer, ElectionEligibleCourseSerializer, PartylistElectionSerializer, SmallPositionSerializer, SmallPartylistSerializer, PartylistElectionSerializer, SmallElectionPartylistSerializer
+from .nested import VoteItemSerializer, SmallElectionSerializer, ElectionEligibleYearLevelSerializer, ElectionEligibleCourseSerializer, PartylistElectionSerializer, SmallPositionSerializer, SmallPartylistSerializer, PartylistElectionSerializer, SmallElectionPartylistSerializer, SmallPartylistElectionSerializer
 
 from .list import ElectionEligiblePositionListSerializer
 
@@ -26,7 +26,7 @@ class CandidateDetailSerializer(serializers.ModelSerializer):
     student_enrollment = SmallStudentSerializer(read_only=True)
     election = SmallElectionSerializer(read_only=True)
     position = SmallPositionSerializer(read_only=True)
-    partylist = SmallPartylistSerializer(read_only=True)
+    partylist = SmallPartylistElectionSerializer(read_only=True)
 
     class Meta:
         model = Candidate
