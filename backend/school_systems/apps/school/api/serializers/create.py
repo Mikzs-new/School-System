@@ -18,10 +18,10 @@ class SchoolYearCreateSerializer(serializers.ModelSerializer):
 class DepartmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
-        fields = ['name','school']
+        fields = ['name','school','initials']
 
 class CourseCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ['name','school','department']
+        fields = ['name','school','department','initials']
 
