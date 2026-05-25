@@ -2,7 +2,9 @@ from django.db import models
 
 from apps.election.models import Election
 
-class ElectionAnalyticsSnapshot(models.Model):
+from shared.base_models.timestamped import TimeStampedModel
+
+class ElectionAnalyticsSnapshot(TimeStampedModel):
     election = models.OneToOneField(
         Election,
         on_delete=models.CASCADE
