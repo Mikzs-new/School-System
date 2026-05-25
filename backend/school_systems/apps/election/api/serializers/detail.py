@@ -43,9 +43,14 @@ class ElectionDetailSerializer(serializers.ModelSerializer):
     candidates = CandidateDetailSerializer(many=True, read_only=True)
     partylists = SmallElectionPartylistSerializer(many=True, read_only=True)
     
+    results = serializers.SerializerMethodField()
+
     class Meta:
         model = Election
         fields = ['id', 'name', 'valid_courses', 'valid_year_levels', 'positions','partylists','candidates']
+
+    def get_results(self,value):
+        return
 
 class VoteDetailSerializer(serializers.ModelSerializer):
     vote_items = VoteItemSerializer(many=True, read_only=True)
