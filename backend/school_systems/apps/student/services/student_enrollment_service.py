@@ -7,7 +7,7 @@ from shared.utils.helper.school import get_current_school_year, is_current_schoo
 class StudentEnrollmentService:
     @staticmethod
     @transaction.atomic
-    def create_student_info(school_staff,school,validated_data):
+    def enroll_student(school_staff,school,validated_data):
         
 
         student = validated_data['student']
