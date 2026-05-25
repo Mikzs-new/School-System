@@ -25,6 +25,7 @@ class ElectionEligibleYearLevelCreateSerializer(serializers.ModelSerializer):
         fields = ['year_level','election']
 
 class CandidateCreateSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = Candidate
         fields = ['student_enrollment','election','partylist','position','image']
