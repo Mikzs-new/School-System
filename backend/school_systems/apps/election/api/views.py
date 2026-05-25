@@ -22,6 +22,8 @@ from apps.election.services.election_services import ElectionService
 from apps.election.services.candidate_services import CandidateService
 from apps.election.services.partylist_services import PartylistService
 
+from apps.election.selectors.election_selectors import ElectionSelector
+
 class CandidateViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
     def get_permissions(self):
@@ -200,18 +202,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        if user.is_staff:
-            return Election.objects.all()
-        elif hasattr(user, 'school_staff_profile'):
-            return Election.objects.filter(
-                school=user.school_staff_profile.school
-            )
-        elif hasattr(user, 'student_profile'):
-            return Election.objects.filter(
-                school=user.student_profile.school
-            )
-
-        return Election.objects.none()
+        return ElectionSelector.get_queryset(user)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
