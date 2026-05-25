@@ -3,6 +3,9 @@ from django.db import transaction
 
 from apps.election.models.election import Election
 from apps.election.models.eligibility import ElectionEligibleCourse, ElectionEligiblePosition, ElectionEligibleYearLevel, PartylistElection
+from apps.election.models.vote import Vote, VoteItem
+
+from apps.analytics.models import ElectionAnalyticsSnapshot
 
 from shared.utils.helper.school import get_current_school_year
 
@@ -112,3 +115,20 @@ class ElectionService:
 
         return eligible_partylist
         
+    @staticmethod
+    @transaction.atomic
+    def generate_snapshot(election):
+        total_possible_votes = ...
+        total_votes = ...
+        turnout_percentage = ...
+        abstained_students = ...
+
+        ElectionAnalyticsSnapshot.objects.update_or_create(
+            election=election,
+            defaults={
+                "total_possible_votes":total_possible_votes,
+                "total_votes": total_votes,
+                "turnout_percentage": turnout_percentage,
+                "abstained_students": abstained_students,
+            }
+        )
