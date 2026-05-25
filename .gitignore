@@ -22,3 +22,6 @@ compose.yml
 Thumbs.db
 
 venv_voting/
+
+node_modules/
+
