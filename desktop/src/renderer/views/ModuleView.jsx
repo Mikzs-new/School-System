@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { createModuleRecord, deleteModuleRecord, listModule, updateModuleRecord } from '../api/modules.js';
 import { hasModuleAccess, hasPermission } from '../state/permissionGuard.js';
+import LoadingState from '../components/ui/LoadingState.jsx';
+import StatusBanner from '../components/ui/StatusBanner.jsx';
+import { notifyDesktop } from '../utils/desktopNotify.js';
 
 function getRecordId(record) {
   return record.id || record.pk;
@@ -75,33 +78,27 @@ const FORM_HELP = {
     }
   },
   elections: {
-    required: ['name', 'description', 'school', 'created_by', 'available', 'start_datetime', 'end_datetime'],
+    required: ['name', 'description', 'start_datetime', 'end_datetime'],
     example: {
       name: 'Student Council Election 2026',
       description: 'Annual student election',
-      school: 1,
-      created_by: 1,
-      available: true,
       start_datetime: '2026-05-05T08:00:00Z',
       end_datetime: '2026-05-06T17:00:00Z'
     }
   },
   partylists: {
-    required: ['name', 'description', 'election'],
+    required: ['name'],
     example: {
-      name: 'Sample Partylist',
-      description: 'Partylist description',
-      election: 1
+      name: 'Sample Partylist'
     }
   },
   candidates: {
-    required: ['student', 'election', 'position'],
+    required: ['student_enrollment', 'election', 'position'],
     example: {
-      student: 1,
+      student_enrollment: 1,
       election: 1,
       position: 1,
-      partylist: 1,
-      description: 'Candidate description'
+      partylist: 1
     }
   },
   votes: {
@@ -185,6 +182,7 @@ export default function ModuleView({ moduleConfig, user }) {
     try {
       await createModuleRecord(moduleConfig.endpoint, parsed.data);
       setStatus({ type: 'success', message: 'Record created.' });
+      notifyDesktop(`${moduleConfig.label} updated`, 'Record created successfully.');
       await loadRecords();
     } catch (error) {
       setStatus({ type: 'error', message: error.message });
@@ -211,6 +209,7 @@ export default function ModuleView({ moduleConfig, user }) {
     try {
       await updateModuleRecord(moduleConfig.endpoint, selectedId, parsed.data);
       setStatus({ type: 'success', message: 'Record updated.' });
+      notifyDesktop(`${moduleConfig.label} updated`, 'Record saved successfully.');
       await loadRecords();
     } catch (error) {
       setStatus({ type: 'error', message: error.message });
@@ -232,6 +231,7 @@ export default function ModuleView({ moduleConfig, user }) {
       await deleteModuleRecord(moduleConfig.endpoint, selectedId);
       setSelectedId('');
       setStatus({ type: 'success', message: 'Record deleted.' });
+      notifyDesktop(`${moduleConfig.label} updated`, 'Record deleted successfully.');
       await loadRecords();
     } catch (error) {
       setStatus({ type: 'error', message: error.message });
@@ -251,12 +251,12 @@ export default function ModuleView({ moduleConfig, user }) {
         </button>
       </header>
 
-      {status.message ? <div className={`status-banner ${status.type}`}>{status.message}</div> : null}
+      <StatusBanner type={status.type}>{status.message}</StatusBanner>
 
       <div className="module-layout">
         <div className="data-panel">
           <h2>Records</h2>
-          {isLoading ? <div className="empty-state">Loading...</div> : null}
+          {isLoading ? <LoadingState label={`Loading ${moduleConfig.label.toLowerCase()}...`} /> : null}
           {!isLoading && records.length === 0 ? <div className="empty-state">No records found.</div> : null}
           {!isLoading && records.length > 0 ? (
             <div className="record-list">
@@ -294,7 +294,7 @@ export default function ModuleView({ moduleConfig, user }) {
             ) : (
               <p>No field guide is available for this module.</p>
             )}
-            <p>Use ID numbers for related records like school, course, student, election, or department.</p>
+            <p>Use ID numbers for related records already available in the backend.</p>
             <button type="button" onClick={() => setPayload(formatPayload(formHelp.example))}>
               Use example
             </button>

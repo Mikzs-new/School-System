@@ -1,21 +1,21 @@
 /**
  * src/renderer/state/permissions.js
  *
- * Role → permission map and module registry.
+ * Role to permission map and module registry.
  *
- * Backend permission classes (api/permissions.py):
- *   IsFacilitator → hasattr(request.user, 'facilitator')  → maps to 'staff' / 'admin'
- *   IsStudent     → hasattr(request.user, 'student')       → maps to 'student'
- *   IsAuthenticated → all logged-in users
+ * Existing backend routes under /api/v1/:
+ *   auth/profiles/student, auth/profiles/school_staff,
+ *   election/candidates, election/partylists, election/elections,
+ *   election/vote, election/votes, student/records, student/enroll.
  *
- * Endpoints from backend api/urls.py (all under /api/v1/):
- *   registrations, students, candidates, partylists, elections,
- *   facilitators, departments, courses, schools, votes
+ * The backend currently does not expose school, department, or course routers.
+ * Those modules stay visible by role, but API calls are disabled instead of
+ * inventing desktop-only endpoints.
  */
 
 export const ROLE_PERMISSIONS = {
   admin: ['*'],
-  staff: [
+  facilitator: [
     'students.*',
     'candidates.*',
     'partylists.*',
@@ -36,63 +36,57 @@ export const ROLE_PERMISSIONS = {
 };
 
 export const MODULES = {
-  registrations: {
-    label: 'Registrations',
-    endpoint: '/api/v1/registrations/',
-    permissionModule: 'registrations',
-    primaryPermission: 'registrations.read'
-  },
   schools: {
     label: 'Schools',
-    endpoint: '/api/v1/schools/',
+    endpoint: null,
     permissionModule: 'schools',
     primaryPermission: 'schools.read'
   },
   departments: {
     label: 'Departments',
-    endpoint: '/api/v1/departments/',
+    endpoint: null,
     permissionModule: 'departments',
     primaryPermission: 'departments.read'
   },
   courses: {
     label: 'Courses',
-    endpoint: '/api/v1/courses/',
+    endpoint: null,
     permissionModule: 'courses',
     primaryPermission: 'courses.read'
   },
   students: {
     label: 'Students',
-    endpoint: '/api/v1/students/',
+    endpoint: '/api/v1/student/records/',
     permissionModule: 'students',
     primaryPermission: 'students.read'
   },
   facilitators: {
     label: 'Facilitators',
-    endpoint: '/api/v1/facilitators/',
+    endpoint: '/api/v1/auth/profiles/school_staff/',
     permissionModule: 'facilitators',
     primaryPermission: 'facilitators.read'
   },
   elections: {
     label: 'Elections',
-    endpoint: '/api/v1/elections/',
+    endpoint: '/api/v1/election/elections/',
     permissionModule: 'elections',
     primaryPermission: 'elections.read'
   },
   partylists: {
     label: 'Partylists',
-    endpoint: '/api/v1/partylists/',
+    endpoint: '/api/v1/election/partylists/',
     permissionModule: 'partylists',
     primaryPermission: 'partylists.read'
   },
   candidates: {
     label: 'Candidates',
-    endpoint: '/api/v1/candidates/',
+    endpoint: '/api/v1/election/candidates/',
     permissionModule: 'candidates',
     primaryPermission: 'candidates.read'
   },
   votes: {
     label: 'Votes',
-    endpoint: '/api/v1/votes/',
+    endpoint: '/api/v1/election/votes/',
     permissionModule: 'votes',
     primaryPermission: 'votes.read'
   }
