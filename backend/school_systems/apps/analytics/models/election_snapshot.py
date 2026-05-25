@@ -10,7 +10,7 @@ class ElectionAnalyticsSnapshot(TimeStampedModel):
         on_delete=models.CASCADE
     )
 
-    total_eligible_vote = models.IntegerField(default=0)
+    total_possible_votes = models.IntegerField(default=0)
 
     total_votes = models.IntegerField(default=0)
 

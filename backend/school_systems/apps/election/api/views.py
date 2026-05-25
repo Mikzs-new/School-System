@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.serializers import ValidationError
+from rest_framework.decorators import action
 
 from shared.permissions.user_permissions import CanManageElection, CanVote
 
@@ -235,6 +236,22 @@ class ElectionViewSet(viewsets.ModelViewSet):
 
         return Response({'message':'Election created', 'id': election.id}, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=['post'])
+    def end_election(self, request, pk=None):
+        election = self.get_object()
+
+        if election.status == Election.Status.ENDED:
+            raise ValidationError("Election already ended")
+
+        election.status = Election.Status.ENDED
+        election.save()
+
+        ElectionService.generate_snapshot(election)
+
+        return Response({
+            "message": "Election ended successfully"
+        })
+    
 class ElectionEligibleCourseViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
     permission_classes = [IsAuthenticated, CanManageElection]
 
