@@ -16,7 +16,7 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./frontend/voting_system:/app
+      - ./frontend:/app
       - /app/node_modules
     ports:
       - "5173:5173"

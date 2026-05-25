@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
 
+    'apps.analytics.apps.AnalyticsConfig',
     'apps.authentication.apps.AuthenticationConfig',
     'apps.election.apps.ElectionConfig',
     'apps.school.apps.SchoolConfig',

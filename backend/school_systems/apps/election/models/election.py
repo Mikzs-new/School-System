@@ -12,6 +12,7 @@ class ElectionStatus(models.TextChoices):
     ENABLED = 'enabled', 'Enabled'
     PAUSED = 'paused', 'Paused'
     CANCELLED = 'cancelled', 'Cancelled'
+    ENDED = 'ended', 'Ended'
     HIDDEN = 'hidden', 'Hidden'
     DRAFTED = 'drafted', 'Drafted'
 
@@ -30,7 +31,7 @@ class Election(TimeStampedModel):
     # )
 
     start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField(blank=True)
+    end_datetime = models.DateTimeField()
 
     status = models.CharField(
         max_length=20,
