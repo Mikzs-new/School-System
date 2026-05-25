@@ -74,6 +74,20 @@ export default function ElectionDetail({
     }
   }
 
+  function getPositionTitle(position) {
+
+    if (!position)
+      return 'Unknown Position'
+
+    if (typeof position === 'string')
+      return position
+
+    if (typeof position === 'object')
+      return position.title || 'Unknown Position'
+
+    return 'Unknown Position'
+  }
+
   return (
 
     <div className="page-stack">
@@ -131,26 +145,27 @@ export default function ElectionDetail({
 
               <div className="config-list">
 
-                {details?.valid_courses?.length === 0 ? (
+                {details?.valid_courses?.length > 0 ? (
 
-                  <div className="empty-state">
-                    No allowed courses
-                  </div>
-
-                ) : (
-
-                  details?.valid_courses?.map((item) => (
+                  details.valid_courses.map((item) => (
 
                     <button
                       key={item.id}
                       className="config-item"
                     >
 
-                      {item.course?.name}
+                      {item.course?.name ||
+                        'Unknown Course'}
 
                     </button>
 
                   ))
+
+                ) : (
+
+                  <div className="empty-state">
+                    No allowed courses
+                  </div>
 
                 )}
 
@@ -174,15 +189,9 @@ export default function ElectionDetail({
 
               <div className="config-list">
 
-                {details?.valid_year_levels?.length === 0 ? (
+                {details?.valid_year_levels?.length > 0 ? (
 
-                  <div className="empty-state">
-                    No year levels
-                  </div>
-
-                ) : (
-
-                  details?.valid_year_levels?.map((item) => (
+                  details.valid_year_levels.map((item) => (
 
                     <button
                       key={item.id}
@@ -194,6 +203,12 @@ export default function ElectionDetail({
                     </button>
 
                   ))
+
+                ) : (
+
+                  <div className="empty-state">
+                    No year levels
+                  </div>
 
                 )}
 
@@ -217,32 +232,34 @@ export default function ElectionDetail({
 
               <div className="config-list">
 
-                {details?.positions?.length === 0 ? (
+                {details?.positions?.length > 0 ? (
 
-                  <div className="empty-state">
-                    No positions
-                  </div>
-
-                ) : (
-
-                  details?.positions?.map((position) => (
+                  details.positions.map((position) => (
 
                     <button
                       key={position.id}
                       className="config-item"
                     >
 
-                      {position.title}
+                      {position?.title ||
+                        'Unknown Position'}
 
                       {' — '}
 
                       Seats:
                       {' '}
-                      {position.seat_count}
+
+                      {position?.seat_count || 0}
 
                     </button>
 
                   ))
+
+                ) : (
+
+                  <div className="empty-state">
+                    No positions
+                  </div>
 
                 )}
 
@@ -272,26 +289,29 @@ export default function ElectionDetail({
 
               <div className="config-list">
 
-                {details?.partylists?.length === 0 ? (
+                {details?.partylists?.length > 0 ? (
 
-                  <div className="empty-state">
-                    No partylists
-                  </div>
-
-                ) : (
-
-                  details?.partylists?.map((party, index) => (
+                  details.partylists.map((party, index) => (
 
                     <button
-                      key={index}
+                      key={
+                        party.id || index
+                      }
                       className="config-item"
                     >
 
-                      {party.partylist?.name}
+                      {party.partylist?.name ||
+                        'Unknown Partylist'}
 
                     </button>
 
                   ))
+
+                ) : (
+
+                  <div className="empty-state">
+                    No partylists
+                  </div>
 
                 )}
 
@@ -315,30 +335,35 @@ export default function ElectionDetail({
 
               <div className="config-list">
 
-                {details?.candidates?.length === 0 ? (
+                {details?.candidates?.length > 0 ? (
 
-                  <div className="empty-state">
-                    No candidates
-                  </div>
-
-                ) : (
-
-                  details?.candidates?.map((candidate) => (
+                  details.candidates.map((candidate, index) => (
 
                     <button
-                      key={candidate.id}
+                      key={
+                        candidate.id || index
+                      }
                       className="config-item"
                     >
 
-                      {candidate.student}
+                      {candidate.student ||
+                        'Unknown Student'}
 
                       {' — '}
 
-                      {candidate.position}
+                      {getPositionTitle(
+                        candidate.position
+                      )}
 
                     </button>
 
                   ))
+
+                ) : (
+
+                  <div className="empty-state">
+                    No candidates
+                  </div>
 
                 )}
 

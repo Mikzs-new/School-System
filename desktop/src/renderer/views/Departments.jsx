@@ -1,32 +1,48 @@
-import React, { useEffect, useState } from 'react'
+import React, {
+  useEffect,
+  useState
+} from 'react'
+
 import apiClient from '../api/apiClient.js'
 
 export default function Departments() {
 
-  const [departments, setDepartments] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [departments, setDepartments] =
+    useState([])
 
-  const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-  })
+  const [loading, setLoading] =
+    useState(false)
 
-  const fetchDepartments = async () => {
+  const [formData, setFormData] =
+    useState({
+      name: '',
+      initials: ''
+    })
+
+  useEffect(() => {
+
+    fetchDepartments()
+
+  }, [])
+
+  async function fetchDepartments() {
 
     try {
 
       setLoading(true)
 
-      const response = await apiClient.get('/api/v1/school/departments/')
+      const response =
+        await apiClient.get(
+          '/api/v1/school/departments/'
+        )
 
-      setDepartments(response.data || [])
+      setDepartments(
+        response.data || []
+      )
 
     } catch (err) {
 
       console.error(err)
-
-      setError('Failed to load departments.')
 
     } finally {
 
@@ -34,30 +50,57 @@ export default function Departments() {
     }
   }
 
-  useEffect(() => {
-    fetchDepartments()
-  }, [])
-
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
 
     e.preventDefault()
 
     try {
 
-      await apiClient.post('/departments/', formData)
+      const payload = {
+
+        name:
+          formData.name,
+
+        initials:
+          formData.initials,
+
+        school: 4
+      }
+
+      console.log(payload)
+
+      await apiClient.post(
+        '/api/v1/school/departments/',
+        payload
+      )
 
       setFormData({
         name: '',
-        code: '',
+        initials: ''
       })
 
       fetchDepartments()
+
+      alert(
+        'Department added successfully'
+      )
 
     } catch (err) {
 
       console.error(err)
 
-      setError('Failed to add department.')
+      alert(
+
+        err?.response?.data
+
+          ? JSON.stringify(
+              err.response.data,
+              null,
+              2
+            )
+
+          : 'Failed to add department.'
+      )
     }
   }
 
@@ -66,19 +109,25 @@ export default function Departments() {
     <div className="page-stack">
 
       <div className="page-header">
+
         <div>
-          <h1>Departments</h1>
-          <p>Manage school departments.</p>
+
+          <h1>
+            Departments
+          </h1>
+
+          <p>
+            Manage school departments.
+          </p>
+
         </div>
+
       </div>
 
-      {error ? (
-        <div className="status-banner error">
-          {error}
-        </div>
-      ) : null}
-
-      <form className="card-form" onSubmit={handleSubmit}>
+      <form
+        className="card-form"
+        onSubmit={handleSubmit}
+      >
 
         <input
           type="text"
@@ -94,12 +143,12 @@ export default function Departments() {
 
         <input
           type="text"
-          placeholder="Department Code"
-          value={formData.code}
+          placeholder="Department Initials"
+          value={formData.initials}
           onChange={(e) =>
             setFormData({
               ...formData,
-              code: e.target.value
+              initials: e.target.value
             })
           }
         />
@@ -115,10 +164,19 @@ export default function Departments() {
         <table className="records-table">
 
           <thead>
+
             <tr>
-              <th>Code</th>
-              <th>Department</th>
+
+              <th>
+                Initials
+              </th>
+
+              <th>
+                Department
+              </th>
+
             </tr>
+
           </thead>
 
           <tbody>
@@ -126,26 +184,39 @@ export default function Departments() {
             {loading ? (
 
               <tr>
+
                 <td colSpan="2">
                   Loading...
                 </td>
+
               </tr>
 
             ) : departments.length === 0 ? (
 
               <tr>
+
                 <td colSpan="2">
                   No departments found.
                 </td>
+
               </tr>
 
             ) : (
 
-              departments.map((department) => (
-                <tr key={department.id}>
-                  <td>{department.code}</td>
-                  <td>{department.name}</td>
+              departments.map((dept) => (
+
+                <tr key={dept.id}>
+
+                  <td>
+                    {dept.initials}
+                  </td>
+
+                  <td>
+                    {dept.name}
+                  </td>
+
                 </tr>
+
               ))
 
             )}
