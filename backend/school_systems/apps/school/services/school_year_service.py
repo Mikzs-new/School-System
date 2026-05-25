@@ -7,7 +7,7 @@ from shared.utils.helper.school import get_user_school
 
 @transaction.atomic
 def create_school_year(*,school_staff_profile,name,start_date,end_date):
-    school = get_user_school(school_staff_profile)
+    school = school_staff_profile.school
     current_school_year = SchoolYear.objects.filter(school=school).order_by('-created_at').first()
     if current_school_year and current_school_year.is_current_school_year:
         raise ValidationError('Current school year is active, update it instead')

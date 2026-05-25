@@ -2,6 +2,7 @@ from rest_framework import viewsets,status, mixins
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.serializers import ValidationError
 
 from shared.permissions.user_permissions import CanManageElection, CanVote
 
@@ -12,10 +13,9 @@ from apps.election.models.partylist import Partylist
 from apps.election.models.vote import Vote
 
 from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, ElectionEligiblePositionCreateSerializer, VoteCreateSerializer, PartylistElection, ElectionEligibleCourseCreateSerializer, ElectionEligibleYearLevelCreateSerializer, PartylistElectionCreateSerializer
-
 from .serializers.detail import ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer
-
 from .serializers.list import ElectionListSerializer, PartylistListSerializer, CandidateListSerializer
+from .serializers.update import ElectionUpdateSerializer
 
 from apps.election.services.vote_services import VoteService
 from apps.election.services.election_services import ElectionService
@@ -76,7 +76,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can create candidate")
+            raise ValidationError("Only staff can create candidate")
 
         school_staff_profile = request.user.school_staff_profile
 
@@ -127,7 +127,7 @@ class ElectionEligiblePositionViewSet(viewsets.GenericViewSet, mixins.CreateMode
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can create position")
+            raise ValidationError("Only staff can create position")
 
         school_staff_profile = request.user.school_staff_profile
 
@@ -181,7 +181,7 @@ class PartylistViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can create partylist")
+            raise ValidationError("Only staff can create partylist")
 
         school_staff_profile = request.user.school_staff_profile
 
@@ -207,6 +207,8 @@ class ElectionViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return ElectionDetailSerializer
+        elif self.action in ['update','partial_update']:
+            return ElectionUpdateSerializer
         elif self.action == 'create':
             return ElectionCreateSerializer
         elif self.action == 'list':
@@ -222,7 +224,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can create elections")
+            raise ValidationError("Only staff can create elections")
 
         school_staff_profile = request.user.school_staff_profile
 
@@ -248,7 +250,7 @@ class ElectionEligibleCourseViewSet(viewsets.GenericViewSet, mixins.CreateModelM
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can add eligible courses")
+            raise ValidationError("Only staff can add eligible courses")
 
         school_staff_profile = request.user.school_staff_profile
 
@@ -274,7 +276,7 @@ class ElectionEligibleYearLevelViewSet(viewsets.GenericViewSet, mixins.CreateMod
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can add eligible year level")
+            raise ValidationError("Only staff can add eligible year level")
 
         school_staff_profile = request.user.school_staff_profile
 
@@ -300,7 +302,7 @@ class PartylistElectionViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin)
         serializer.is_valid(raise_exception=True)
 
         if not hasattr(request.user, 'school_staff_profile'):
-            raise PermissionDenied("Only staff can add eligible election partylist")
+            raise ValidationError("Only staff can add eligible election partylist")
 
         school_staff_profile = request.user.school_staff_profile
 

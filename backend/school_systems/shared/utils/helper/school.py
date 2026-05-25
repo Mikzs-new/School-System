@@ -3,10 +3,10 @@ from django.core.exceptions import ValidationError
 from apps.school.models.school_year import SchoolYear
 
 def get_current_school_year(school):
-    return SchoolYear.objects.filter(school=school).order_by('-created_by').first()
+    return SchoolYear.objects.filter(school=school).order_by('-created_at').first()
 
 def is_current_school_year_active(school):
-    current = SchoolYear.objects.filter(school=school).order_by('-created_by').first()
+    current = SchoolYear.objects.filter(school=school).order_by('-created_at').first()
 
     if not current:
         raise ValidationError('School year is not configured')

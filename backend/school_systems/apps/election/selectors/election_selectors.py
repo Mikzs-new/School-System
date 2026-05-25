@@ -21,10 +21,10 @@ class ElectionSelector:
             student_profile = user.student_profile
             
             enrollments = StudentEnrollment.objects.filter(
-                student_profile=student_profile
+                student=student_profile
             )
 
-            if not enrollment:
+            if not enrollments:
                 raise ValidationError('Student is not enrolled')
 
             query = Q()
