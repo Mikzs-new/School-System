@@ -26,9 +26,9 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
         if user.is_staff:
             return Department.objects.all()
-        elif hasattr(user, 'facilitator'):
+        elif hasattr(user, 'school_staff_profile'):
             return Department.objects.filter(
-                school=user.facilitator.school
+                school=user.school_staff_profile.school
             )
         
         return Department.objects.none()
@@ -53,9 +53,9 @@ class CourseViewSet(viewsets.ModelViewSet):
 
         if user.is_staff:
             return Course.objects.all()
-        elif hasattr(user, 'facilitator'):
+        elif hasattr(user, 'school_staff_profile'):
             return Course.objects.filter(
-                school=user.facilitator.school
+                school=user.school_staff_profile.school
             )
         
         return Course.objects.none()
