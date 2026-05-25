@@ -78,10 +78,13 @@ class VoteService:
 
             seen_candidates.add(candidate_id)       
 
-        vote = Vote.objects.create(
+        vote = Vote(
             student_enrollment=student_enrollment,
             election=election
         )
+
+        vote.full_clean()
+        vote.save()
 
         vote_items_objects = []
 
