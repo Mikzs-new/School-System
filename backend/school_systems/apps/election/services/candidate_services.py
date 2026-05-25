@@ -17,7 +17,7 @@ class CandidateService:
         if not school_year or not school_year.is_current_school_year:
             raise ValidationError('School year must be configured')
 
-        if not election.is_editable():
+        if not election.is_editable:
             raise ValidationError('Cannot make changes in election')
 
         if Candidate.objects.filter(election=election,student_enrollment=student_enrollment).exists():

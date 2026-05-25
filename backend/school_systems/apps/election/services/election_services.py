@@ -101,7 +101,7 @@ class ElectionService:
     @transaction.atomic
     def create_eligible_partylist(*,school_staff_profile,description,partylist,election):
 
-        if election.school_year.school != partylist.school or school_staff_profile != partylist.school  or school_staff_profile.school != election.school_year.school:
+        if election.school_year.school != partylist.school or school_staff_profile.school != partylist.school  or school_staff_profile.school != election.school_year.school:
             raise ValidationError('Cannot modify another school election')
         
         if not election.is_editable:

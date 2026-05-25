@@ -26,7 +26,7 @@ class CandidateListSerializer(serializers.ModelSerializer):
 class PartylistListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Partylist
-        fields = ['id','name','added_by']
+        fields = ['id','name']
 
 class ElectionListSerializer(serializers.ModelSerializer):
     class Meta:
