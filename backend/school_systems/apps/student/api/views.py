@@ -74,7 +74,7 @@ class StudentViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         student = StudentService.create_student(
-            school_staff_profile=request.user.school_school_staff_profile,
+            school_staff_profile=request.user.school_staff_profile,
             validated_data=serializer.validated_data
         )
 
@@ -89,14 +89,7 @@ class StudentEnrollmentViewset(viewsets.GenericViewSet, mixins.CreateModelMixin)
     serializer_class = StudentEnrollmentCreateSerializer
 
     def get_queryset(self):
-        user = self.request.user 
-
-        if user.is_staff:
-            return StudentEnrollment.objects.all()
-        elif hasattr(user, 'school_staff_profile'):
-            return StudentEnrollment.objects.filter(school_year__school=user.school_staff_profile.school)
-        
-        return StudentEnrollment.objects.none()
+        return super().get_queryset()
     
     def create(self,request):
         serializer = self.get_serializer(data=request.data)
@@ -108,7 +101,7 @@ class StudentEnrollmentViewset(viewsets.GenericViewSet, mixins.CreateModelMixin)
         StudentEnrollmentService.enroll_student(
             school_staff=request.user.school_staff_profile,
             school=school,
-            validated_data=serializer.validated_data
+            **serializer.validated_data
         )
 
         return Response({'message':'Student enrolled successfuly'}, status=status.HTTP_201_CREATED)

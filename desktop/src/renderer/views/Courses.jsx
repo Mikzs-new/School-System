@@ -1,32 +1,61 @@
-import React, { useEffect, useState } from 'react'
+import React, {
+  useEffect,
+  useState
+} from 'react'
+
 import apiClient from '../api/apiClient.js'
 
 export default function Courses() {
 
-  const [courses, setCourses] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [courses, setCourses] =
+    useState([])
 
-  const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    department: '',
-  })
+  const [departments, setDepartments] =
+    useState([])
 
-  const fetchCourses = async () => {
+  const [loading, setLoading] =
+    useState(false)
+
+  const [error, setError] =
+    useState('')
+
+  const [formData, setFormData] =
+    useState({
+      name: '',
+      initials: '',
+      department: ''
+    })
+
+  useEffect(() => {
+
+    fetchCourses()
+
+    fetchDepartments()
+
+  }, [])
+
+  async function fetchCourses() {
+
     try {
 
       setLoading(true)
 
-      const response = await apiClient.get('/api/v1/school/courses/')
+      const response =
+        await apiClient.get(
+          '/api/v1/school/courses/'
+        )
 
-      setCourses(response.data || [])
+      setCourses(
+        response.data || []
+      )
 
     } catch (err) {
 
       console.error(err)
 
-      setError('Failed to load courses.')
+      setError(
+        'Failed to load courses.'
+      )
 
     } finally {
 
@@ -34,51 +63,109 @@ export default function Courses() {
     }
   }
 
-  useEffect(() => {
-    fetchCourses()
-  }, [])
+  async function fetchDepartments() {
 
-  const handleSubmit = async (e) => {
+    try {
+
+      const response =
+        await apiClient.get(
+          '/api/v1/school/departments/'
+        )
+
+      setDepartments(
+        response.data || []
+      )
+
+    } catch (err) {
+
+      console.error(err)
+    }
+  }
+
+  async function handleSubmit(e) {
 
     e.preventDefault()
 
     try {
 
-      await apiClient.post('/api/v1/school/courses/', formData)
+      const payload = {
+
+        name:
+          formData.name,
+
+        initials:
+          formData.initials,
+
+        department:
+          Number(
+            formData.department
+          ),
+
+        school: 4
+      }
+
+      console.log(payload)
+
+      await apiClient.post(
+        '/api/v1/school/courses/',
+        payload
+      )
 
       setFormData({
         name: '',
-        code: '',
-        department: '',
+        initials: '',
+        department: ''
       })
 
       fetchCourses()
+
+      alert(
+        'Course added successfully'
+      )
 
     } catch (err) {
 
       console.error(err)
 
-      setError('Failed to add course.')
+      alert(
+
+        err?.response?.data
+
+          ? JSON.stringify(
+              err.response.data,
+              null,
+              2
+            )
+
+          : 'Failed to add course.'
+      )
     }
   }
 
   return (
+
     <div className="page-stack">
 
       <div className="page-header">
+
         <div>
-          <h1>Courses</h1>
-          <p>Manage school courses.</p>
+
+          <h1>
+            Courses
+          </h1>
+
+          <p>
+            Manage school courses.
+          </p>
+
         </div>
+
       </div>
 
-      {error ? (
-        <div className="status-banner error">
-          {error}
-        </div>
-      ) : null}
-
-      <form className="card-form" onSubmit={handleSubmit}>
+      <form
+        className="card-form"
+        onSubmit={handleSubmit}
+      >
 
         <input
           type="text"
@@ -94,27 +181,45 @@ export default function Courses() {
 
         <input
           type="text"
-          placeholder="Course Code"
-          value={formData.code}
+          placeholder="Course Initials"
+          value={formData.initials}
           onChange={(e) =>
             setFormData({
               ...formData,
-              code: e.target.value
+              initials: e.target.value
             })
           }
         />
 
-        <input
-          type="text"
-          placeholder="Department"
+        <select
           value={formData.department}
           onChange={(e) =>
             setFormData({
               ...formData,
-              department: e.target.value
+              department:
+                e.target.value
             })
           }
-        />
+        >
+
+          <option value="">
+            Select Department
+          </option>
+
+          {departments.map((dept) => (
+
+            <option
+              key={dept.id}
+              value={dept.id}
+            >
+
+              {dept.name}
+
+            </option>
+
+          ))}
+
+        </select>
 
         <button type="submit">
           Add Course
@@ -127,11 +232,23 @@ export default function Courses() {
         <table className="records-table">
 
           <thead>
+
             <tr>
-              <th>Code</th>
-              <th>Course</th>
-              <th>Department</th>
+
+              <th>
+                Initials
+              </th>
+
+              <th>
+                Course
+              </th>
+
+              <th>
+                Department
+              </th>
+
             </tr>
+
           </thead>
 
           <tbody>
@@ -139,31 +256,45 @@ export default function Courses() {
             {loading ? (
 
               <tr>
+
                 <td colSpan="3">
                   Loading...
                 </td>
+
               </tr>
 
             ) : courses.length === 0 ? (
 
               <tr>
+
                 <td colSpan="3">
                   No courses found.
                 </td>
+
               </tr>
 
             ) : (
 
               courses.map((course) => (
-                <tr key={course.id}>
-                  <td>{course.initials || '-'}</td>
 
-                  <td>{course.name}</td>
+                <tr key={course.id}>
 
                   <td>
-                    {course.department?.name || '-'}
+                    {course.initials}
                   </td>
+
+                  <td>
+                    {course.name}
+                  </td>
+
+                  <td>
+                    {
+                      course.department?.name
+                    }
+                  </td>
+
                 </tr>
+
               ))
 
             )}

@@ -15,6 +15,9 @@ export default function Students() {
   const [students, setStudents] =
     useState([]);
 
+  const [courses, setCourses] =
+    useState([]);
+
   const [loading, setLoading] =
     useState(true);
 
@@ -22,17 +25,21 @@ export default function Students() {
     useState(false);
 
   const [formData, setFormData] =
-  useState({
-    first_name: "",
-    last_name: "",
-    school_student_id: "",
-    email: "",
-    course: "",
-    department: ""
-  });
+    useState({
+      first_name: "",
+      last_name: "",
+      school_student_id: "",
+      email: "",
+      course: "",
+      year_level: "1"
+    });
 
   useEffect(() => {
+
     fetchStudents();
+
+    fetchCourses();
+
   }, []);
 
   async function fetchStudents() {
@@ -50,12 +57,36 @@ export default function Students() {
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        "FETCH STUDENTS ERROR:",
+        error
+      );
 
     } finally {
 
       setLoading(false);
+    }
+  }
 
+  async function fetchCourses() {
+
+    try {
+
+      const response =
+        await api.get(
+          "/api/v1/school/courses/"
+        );
+
+      setCourses(
+        response.data || []
+      );
+
+    } catch (error) {
+
+      console.error(
+        "FETCH COURSES ERROR:",
+        error
+      );
     }
   }
 
@@ -68,17 +99,17 @@ export default function Students() {
 
     try {
 
-      const formData =
+      const form =
         new FormData();
 
-      formData.append(
+      form.append(
         "file",
         file
       );
 
       await api.post(
         "/api/v1/student/import-csv/",
-        formData,
+        form,
         {
           headers: {
             "Content-Type":
@@ -109,9 +140,87 @@ export default function Students() {
 
     try {
 
-      await api.post(
-        "/api/v1/student/records/",
-        formData
+      if (
+        !formData.first_name.trim()
+      ) {
+
+        alert(
+          "First name is required"
+        );
+
+        return;
+      }
+
+      if (
+        !formData.last_name.trim()
+      ) {
+
+        alert(
+          "Last name is required"
+        );
+
+        return;
+      }
+
+      if (
+        !formData.school_student_id.trim()
+      ) {
+
+        alert(
+          "Student ID is required"
+        );
+
+        return;
+      }
+
+      if (!formData.course) {
+
+        alert(
+          "Please select a course"
+        );
+
+        return;
+      }
+
+      const payload = {
+
+        first_name:
+          formData.first_name.trim(),
+
+        last_name:
+          formData.last_name.trim(),
+
+        school_student_id:
+          formData.school_student_id.trim(),
+
+        email:
+          formData.email.trim(),
+
+        course:
+          Number(formData.course),
+
+        year_level:
+          Number(formData.year_level)
+      };
+
+      console.log(
+        "SUBMIT PAYLOAD:",
+        payload
+      );
+
+      const response =
+        await api.post(
+          "/api/v1/student/records/",
+          payload
+        );
+
+      console.log(
+        "SUCCESS RESPONSE:",
+        response.data
+      );
+
+      alert(
+        "Student added successfully"
       );
 
       await fetchStudents();
@@ -122,21 +231,53 @@ export default function Students() {
         first_name: "",
         last_name: "",
         school_student_id: "",
-        email: ""
+        email: "",
+        course: "",
+        year_level: "1"
       });
-
-      alert(
-        "Student added successfully"
-      );
 
     } catch (error) {
 
-      console.error(error);
-
-      alert(
-        error?.response?.data?.detail ||
-        "Failed to add student"
+      console.error(
+        "FULL SUBMIT ERROR:",
+        error
       );
+
+      console.error(
+        "RESPONSE:",
+        error?.response
+      );
+
+      console.error(
+        "DATA:",
+        error?.response?.data
+      );
+
+      console.error(
+        "MESSAGE:",
+        error?.message
+      );
+
+      const backendError =
+        error?.response?.data;
+
+      if (backendError) {
+
+        alert(
+          JSON.stringify(
+            backendError,
+            null,
+            2
+          )
+        );
+
+      } else {
+
+        alert(
+          error.message ||
+          "Failed to add student"
+        );
+      }
     }
   }
 
@@ -154,7 +295,9 @@ export default function Students() {
             STUDENT DIRECTORY
           </span>
 
-          <h1>Students</h1>
+          <h1>
+            Students
+          </h1>
 
           <p>
             Manage student voters and
@@ -205,7 +348,9 @@ export default function Students() {
 
           <div className="modal-card">
 
-            <h2>Add Student</h2>
+            <h2>
+              Add Student
+            </h2>
 
             <form onSubmit={handleSubmit}>
 
@@ -216,7 +361,8 @@ export default function Students() {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    first_name: e.target.value
+                    first_name:
+                      e.target.value
                   })
                 }
               />
@@ -228,7 +374,8 @@ export default function Students() {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    last_name: e.target.value
+                    last_name:
+                      e.target.value
                   })
                 }
               />
@@ -236,7 +383,9 @@ export default function Students() {
               <input
                 type="text"
                 placeholder="Student ID"
-                value={formData.school_student_id}
+                value={
+                  formData.school_student_id
+                }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -253,33 +402,77 @@ export default function Students() {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    email: e.target.value
-                  })
-                }
-              />
-              <input
-                type="text"
-                placeholder="Course"
-                value={formData.course}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    course: e.target.value
+                    email:
+                      e.target.value
                   })
                 }
               />
 
-              <input
-                type="text"
-                placeholder="Department"
-                value={formData.department}
+              {/* COURSE */}
+
+              <select
+                value={formData.course}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    department: e.target.value
+                    course:
+                      e.target.value
                   })
                 }
-              />
+              >
+
+                <option value="">
+                  Select Course
+                </option>
+
+                {courses.map((course) => (
+
+                  <option
+                    key={course.id}
+                    value={course.id}
+                  >
+
+                    {course.name}
+
+                  </option>
+
+                ))}
+
+              </select>
+
+              {/* YEAR LEVEL */}
+
+              <select
+                value={
+                  formData.year_level
+                }
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    year_level:
+                      e.target.value
+                  })
+                }
+              >
+
+                <option value="1">
+                  Year 1
+                </option>
+
+                <option value="2">
+                  Year 2
+                </option>
+
+                <option value="3">
+                  Year 3
+                </option>
+
+                <option value="4">
+                  Year 4
+                </option>
+
+              </select>
+
               <div className="modal-actions">
 
                 <button
@@ -292,7 +485,9 @@ export default function Students() {
                 </button>
 
                 <button type="submit">
+
                   Add Student
+
                 </button>
 
               </div>
@@ -323,7 +518,9 @@ export default function Students() {
       {loading ? (
 
         <div className="empty-state">
+
           Loading students...
+
         </div>
 
       ) : (
@@ -341,7 +538,7 @@ export default function Students() {
 
                 <div className="student-avatar">
 
-                  {student.first_name
+                  {student.full_name
                     ?.charAt(0)}
 
                 </div>
@@ -358,16 +555,13 @@ export default function Students() {
 
                 <h3>
 
-                  {student.first_name}
-                  {" "}
-                  {student.last_name}
+                  {student.full_name}
 
                 </h3>
 
                 <p>
 
-                  {student.course_name ||
-                    "No course"}
+                  Student Voter
 
                 </p>
 
@@ -377,7 +571,9 @@ export default function Students() {
 
                     <GraduationCap size={14} />
 
-                    {student.school_student_id}
+                    {
+                      student.school_student_id
+                    }
 
                   </div>
 
