@@ -108,7 +108,7 @@ class StudentEnrollmentViewset(viewsets.GenericViewSet, mixins.CreateModelMixin)
         StudentEnrollmentService.enroll_student(
             school_staff=request.user.school_staff_profile,
             school=school,
-            **serializer.validated_data
+            validated_data=serializer.validated_data
         )
 
         return Response({'message':'Student enrolled successfuly'}, status=status.HTTP_201_CREATED)
