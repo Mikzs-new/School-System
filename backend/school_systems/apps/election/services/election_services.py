@@ -2,10 +2,11 @@ from rest_framework.serializers import ValidationError
 from django.db import transaction
 from django.db.models import Count
 
-from apps.election.models.election import Election
+from apps.election.models.election import Election, ElectionStatus
 from apps.election.models.eligibility import ElectionEligibleCourse, ElectionEligiblePosition, ElectionEligibleYearLevel, PartylistElection
 from apps.election.models.vote import Vote, VoteItem
 from apps.election.models.candidate import Candidate
+
 
 from apps.student.models import StudentEnrollment
 
@@ -121,6 +122,8 @@ class ElectionService:
     @staticmethod
     @transaction.atomic
     def generate_snapshot(schooL_staff_profile,election):
+        election.status = ElectionStatus.ENDED
+        election.save()
         school_year = election.school_year
         eligible_course = ElectionEligibleCourse.objects.filter(election=election).values_list('course',flat=True)
         eligible_year = ElectionEligibleYearLevel.objects.filter(election=election).values_list('year_level',flat=True)
@@ -135,12 +138,10 @@ class ElectionService:
 
         election_snapshot = ElectionAnalyticsSnapshot.objects.create(
             election=election,
-            defaults={
-                "total_possible_votes":total_possible_votes,
-                "total_votes": total_votes,
-                "turnout_percentage": turnout_percentage,
-                "abstained_students": abstained_students,
-            }
+            total_possible_votes=total_possible_votes,
+            total_votes=total_votes,
+            turnout_percentage=turnout_percentage,
+            abstained_students=abstained_students
         )
 
         candidates = Candidate.objects.filter(
@@ -164,16 +165,16 @@ class ElectionService:
                 position=position
             ).order_by('-total_votes')
 
-            total_position_votes = sum(
-                c.total_votes
-                for c in position_candidates
-            )
+            # total_position_votes = sum(
+            #     c.total_votes
+            #     for c in position_candidates
+            # )
 
             ranking = 1
 
             for candidate in position_candidates:
-                if total_position_votes > 0:
-                    percentage = candidate.total_votes / total_position_votes * 100
+                if total_votes > 0:
+                    percentage = candidate.total_votes / total_votes * 100
                 else:
                     percentage = 0
                 candidate_analytics_create.append(

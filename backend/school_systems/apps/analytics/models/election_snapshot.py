@@ -7,7 +7,8 @@ from shared.base_models.timestamped import TimeStampedModel
 class ElectionAnalyticsSnapshot(TimeStampedModel):
     election = models.OneToOneField(
         Election,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        unique=True
     )
 
     total_possible_votes = models.IntegerField(default=0)

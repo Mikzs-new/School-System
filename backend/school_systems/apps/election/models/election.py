@@ -78,6 +78,7 @@ class Election(TimeStampedModel):
         if self.status != ElectionStatus.ENABLED:
             return False
         time = timezone.now()
+        print(time)
         return (self.start_datetime <= time <= self.end_datetime)
     
     @property

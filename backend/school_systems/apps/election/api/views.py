@@ -14,7 +14,7 @@ from apps.election.models.partylist import Partylist
 from apps.election.models.vote import Vote
 
 from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, ElectionEligiblePositionCreateSerializer, VoteCreateSerializer, PartylistElection, ElectionEligibleCourseCreateSerializer, ElectionEligibleYearLevelCreateSerializer, PartylistElectionCreateSerializer
-from .serializers.detail import ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer, ElectionResultSerialzer
+from .serializers.detail import ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer, ElectionResultSerializer
 from .serializers.list import ElectionListSerializer, PartylistListSerializer, CandidateListSerializer
 from .serializers.update import ElectionUpdateSerializer
 
@@ -243,16 +243,13 @@ class ElectionViewSet(viewsets.ModelViewSet):
         if election.status == ElectionStatus.DRAFTED:
             raise ValidationError('Election has not started yet')
     
-        if election.status == Election.Status.ENDED:
+        if election.status == ElectionStatus.ENDED:
             raise ValidationError("Election already ended")
 
         user = request.user
 
         if not hasattr(user, 'school_staff_profile'):
             raise ValidationError('User has no permission')
-
-        election.status = Election.Status.ENDED
-        election.save()
 
         election_snapshot = ElectionService.generate_snapshot(schooL_staff_profile=user.school_staff_profile,election=election)
 

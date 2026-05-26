@@ -4,8 +4,6 @@ from apps.student.models.student_enrollment import StudentEnrollment
 from apps.school.models.course import Course
 from apps.school.models.school import School
 
-from shared.utils.helper.school import get_user_school
-
 class StudentEnrollmentCreateSerializer(serializers.ModelSerializer):
     school = serializers.PrimaryKeyRelatedField(
         queryset=School.objects.all()

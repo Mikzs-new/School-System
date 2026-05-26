@@ -47,23 +47,9 @@ class ElectionCreateSerializer(serializers.ModelSerializer):
 
 class VoteItemInputSerialzer(serializers.Serializer):
     candidate = serializers.PrimaryKeyRelatedField(
-        queryset=Candidate.objects.none()
+        queryset=Candidate.objects.all()
     )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        request = self.context.get('request')
-
-        if request:
-            school = get_user_school(request.user)
-
-            self.fields['candidate'].queryset = (
-                Candidate.objects.filter(
-                    election__school_year__school=school
-                )
-            )
-
+    
 class VoteCreateSerializer(serializers.Serializer):
     election = serializers.PrimaryKeyRelatedField(
         queryset=Election.objects.none()
@@ -77,6 +63,20 @@ class VoteCreateSerializer(serializers.Serializer):
 
         self.fields['election'].queryset = (
             Election.objects.filter(
-                school_year__school=user.student.school
+                school_year__school=user.student_profile.school
             )
         )
+
+    def validate(self, attrs):
+        election = attrs['election']
+        vote_items = attrs['vote_items']
+
+        for item in vote_items:
+            candidate = item['candidate']
+
+            if candidate.election_id != election.id:
+                raise serializers.ValidationError(
+                    f'Candidate {candidate.id} not in election'
+                )
+
+        return attrs

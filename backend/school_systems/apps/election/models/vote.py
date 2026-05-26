@@ -48,6 +48,7 @@ class VoteItem(models.Model):
     candidate = models.ForeignKey(
         Candidate,
         on_delete=models.CASCADE,
+        related_name='vote_items',
         null=True
     )
     position = models.ForeignKey(
