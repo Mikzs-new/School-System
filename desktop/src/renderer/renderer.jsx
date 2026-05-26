@@ -143,6 +143,8 @@ const ROLE_ROUTES = {
 
   facilitator: [
     'dashboard',
+    'departments',
+    'courses',
     'students',
     'elections',
     'partylists',
