@@ -4,6 +4,8 @@ import {
   FaUsers,
   FaUserTie,
   FaCog,
+  FaBook,
+  FaBuilding,
 } from "react-icons/fa";
 
 import "./sidebar.css";
@@ -35,7 +37,15 @@ function Sidebar() {
           <FaUserTie />
           <span>Facilitators</span>
         </a>
+        <a href="/courses" className="sidebar-item">
+          <FaBook />
+          <span>Courses</span>
+        </a>
 
+        <a href="/departments" className="sidebar-item">
+          <FaBuilding />
+          <span>Departments</span>
+        </a>
         <a href="/settings" className="sidebar-item">
           <FaCog />
           <span>Settings</span>

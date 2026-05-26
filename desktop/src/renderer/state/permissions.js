@@ -29,6 +29,16 @@ export const ROLE_PERMISSIONS = {
     'partylists.update',
     'partylists.delete',
 
+    'courses.read',
+    'courses.create',
+    'courses.update',
+    'courses.delete',
+
+    'departments.read',
+    'departments.create',
+    'departments.update',
+    'departments.delete',
+
     'elections.read',
     'elections.create',
     'elections.update',
@@ -37,6 +47,8 @@ export const ROLE_PERMISSIONS = {
     'facilitators.read',
 
     'votes.read'
+
+
   ],
 
   /* STUDENT */
@@ -95,6 +107,19 @@ export const MODULES = {
     endpoint: '/api/v1/election/votes/',
     permissionModule: 'votes',
     primaryPermission: 'votes.read'
-  }
+  },
 
+  courses: {
+    label: 'Courses',
+    endpoint: '/api/v1/courses/',
+    permissionModule: 'courses',
+    primaryPermission: 'courses.read'
+  },
+
+  departments: {
+    label: 'Departments',
+    endpoint: '/api/v1/departments/',
+    permissionModule: 'departments',
+    primaryPermission: 'departments.read'
+  }
 };
