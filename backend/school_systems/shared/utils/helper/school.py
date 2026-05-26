@@ -17,10 +17,10 @@ def get_user_school(user):
     if user.is_staff:
         return None
     
-    if hasattr(user, 'facilitator'):
+    if hasattr(user, 'school_staff_profile'):
         return user.school_staff_profile.school
     
-    if hasattr(user, 'student'):
+    if hasattr(user, 'student_profile'):
         return user.student_profile.school
     
     return None

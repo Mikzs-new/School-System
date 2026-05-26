@@ -27,7 +27,7 @@ class VoteService:
         
         course_allowed = ElectionEligibleCourse.objects.filter(election=election,course=student_enrollment.course).exists()
 
-        year_allowed = ElectionEligibleYearLevel.objects.filter(election=election,year_level=student_enrollment.year_level).exist()
+        year_allowed = ElectionEligibleYearLevel.objects.filter(election=election,year_level=student_enrollment.year_level).exists()
 
         if not course_allowed or not year_allowed:
             raise ValidationError('Student is not eligble to vote')
@@ -54,7 +54,7 @@ class VoteService:
 
         for item in vote_items:
 
-            candidate = candidate_map[item['candidate']]
+            candidate = candidate_map[item['candidate'].id]
 
             position_id = candidate.position_id
 

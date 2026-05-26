@@ -16,8 +16,6 @@ from ..services.student_enrollment_service import StudentEnrollmentService
 from ..services.imports.student_import_service import StudentImportService
 from ..services.student_service import StudentService
 
-from shared.utils.helper.school import get_user_school
-
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 

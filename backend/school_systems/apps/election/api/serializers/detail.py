@@ -9,7 +9,7 @@ from apps.election.models.vote import Vote
 
 from apps.analytics.models import ElectionAnalyticsSnapshot, CandidateAnalyticsSnapshot
 
-from .nested import VoteItemSerializer, SmallElectionSerializer, ElectionEligibleYearLevelSerializer, ElectionEligibleCourseSerializer, PartylistElectionSerializer, SmallPositionSerializer, SmallPartylistSerializer, PartylistElectionSerializer, SmallElectionPartylistSerializer, SmallPartylistElectionSerializer
+from .nested import VoteItemSerializer, SmallElectionSerializer, ElectionEligibleYearLevelSerializer, ElectionEligibleCourseSerializer, PartylistElectionSerializer, SmallPositionSerializer, SmallPartylistSerializer, PartylistElectionSerializer, SmallElectionPartylistSerializer, SmallPartylistElectionSerializer, SmallCandidateSerializer
 
 from .list import ElectionEligiblePositionListSerializer
 
@@ -43,23 +43,22 @@ class ElectionDetailSerializer(serializers.ModelSerializer):
     positions = ElectionEligiblePositionListSerializer(many=True, read_only=True)
     valid_courses = ElectionEligibleCourseSerializer(many=True, read_only=True)
     valid_year_levels = ElectionEligibleYearLevelSerializer(many=True, read_only=True)
-    candidates = CandidateDetailSerializer(many=True, read_only=True)
+    candidates = SmallCandidateSerializer(many=True, read_only=True)
     partylists = SmallElectionPartylistSerializer(many=True, read_only=True)
 
     class Meta:
         model = Election
-        fields = ['id', 'name', 'valid_courses', 'valid_year_levels', 'positions','partylists','candidates']
+        fields = ['id','name','description','status','start_datetime','end_datetime','valid_courses','valid_year_levels','positions','partylists','candidates']
 
-class ElectionResultSerialzer(serializers.ModelSerializer):
+class ElectionResultSerializer(serializers.ModelSerializer):
     candidate_results = serializers.SerializerMethodField()
 
     class Meta:
         model = ElectionAnalyticsSnapshot
         fields = ['total_possible_votes','total_votes','turnout_percentage','abstained_students','generated_at','candidate_results']
 
-    def get_candidate_results(self, obj):
-        election = obj.election
-
+    def get_candidate_results(self, election):
+        snapshot = ElectionAnalyticsSnapshot.objects.get(election=election)
         positions = ElectionEligiblePosition.objects.filter(
             election=election
         )
@@ -79,12 +78,12 @@ class ElectionResultSerialzer(serializers.ModelSerializer):
             )
 
             abstained = (
-                obj.total_possible_votes
+                snapshot.total_possible_votes
                 - total_position_votes
             )
 
             results.append({
-                'position': position.name,
+                'position': position.title,
 
                 'abstained_votes': abstained,
 
@@ -93,7 +92,7 @@ class ElectionResultSerialzer(serializers.ModelSerializer):
                         'candidate_id': item.candidate.id,
 
                         'candidate_name': str(
-                            item.candidate.student_enrollment
+                            item.candidate.student_enrollment.student.full_name
                         ),
 
                         'total_votes': item.total_votes,

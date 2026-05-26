@@ -3,8 +3,6 @@ from rest_framework.serializers import ValidationError
 
 from apps.school.models.school_year import SchoolYear
 
-from shared.utils.helper.school import get_user_school
-
 @transaction.atomic
 def create_school_year(*,school_staff_profile,name,start_date,end_date):
     school = school_staff_profile.school

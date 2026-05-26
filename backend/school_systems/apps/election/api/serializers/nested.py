@@ -43,7 +43,7 @@ class SmallCandidateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Candidate
-        fields = ['student','position']
+        fields = ['id','student','position']
 
 class VoteItemSerializer(serializers.ModelSerializer):
     candidate = SmallCandidateSerializer(read_only=True)
@@ -91,4 +91,5 @@ class PartylistElectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PartylistElection
         fields = ['election','shool_year','candidates']
+
 
