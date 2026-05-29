@@ -13,7 +13,7 @@ from .nested import VoteItemSerializer, SmallElectionSerializer, ElectionEligibl
 
 from .list import ElectionEligiblePositionListSerializer
 
-from apps.student.api.serializers.nested import SmallStudentSerializer
+from apps.student.api.v1.serializers.nested import SmallStudentSerializer, SmallSchoolYearSerializer
 
 
 class ElectionEligiblePositionDetailSerializer(serializers.ModelSerializer):
@@ -45,10 +45,11 @@ class ElectionDetailSerializer(serializers.ModelSerializer):
     valid_year_levels = ElectionEligibleYearLevelSerializer(many=True, read_only=True)
     candidates = SmallCandidateSerializer(many=True, read_only=True)
     partylists = SmallElectionPartylistSerializer(many=True, read_only=True)
+    school_year = SmallSchoolYearSerializer(read_only=True)
 
     class Meta:
         model = Election
-        fields = ['id','name','description','status','start_datetime','end_datetime','valid_courses','valid_year_levels','positions','partylists','candidates']
+        fields = ['id','name','description','status','school_year','start_datetime','end_datetime','valid_courses','valid_year_levels','positions','partylists','candidates']
 
 class ElectionResultSerializer(serializers.ModelSerializer):
     candidate_results = serializers.SerializerMethodField()

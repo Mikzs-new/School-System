@@ -2,7 +2,7 @@ from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
 
-from .api import views as school
+from . import views as school
 
 router = DefaultRouter()
 

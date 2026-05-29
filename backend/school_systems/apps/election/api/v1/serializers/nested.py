@@ -6,8 +6,8 @@ from apps.election.models.eligibility import ElectionEligiblePosition, ElectionE
 from apps.election.models.election import Election
 from apps.election.models.vote import VoteItem
 
-from apps.authentication.api.serializers.profile.nested import SmallStudentSerializer
-from apps.school.api.serializers.nested import SmallCourseSerializer
+from apps.authentication.api.v1.serializers.profile.nested import SmallStudentSerializer
+from apps.school.api.v1.serializers.nested import SmallCourseSerializer
 
 class SmallPartylistSerializer(serializers.ModelSerializer):
     class Meta:

@@ -5,30 +5,26 @@ from apps.election.models.candidate import Candidate
 from apps.election.models.eligibility import ElectionEligibleCourse, PartylistElection, ElectionEligiblePosition, ElectionEligibleYearLevel
 from apps.election.models.partylist import Partylist
 
-from apps.school.models.course import Course
-
-from shared.utils.helper.school import get_user_school
-
 class ElectionEligiblePositionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElectionEligiblePosition
-        fields = ['title','seat_count','election']
+        fields = ['title','seat_count']
 
 class ElectionEligibleCourseCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElectionEligibleCourse
-        fields = ['course','election']
+        fields = ['course']
 
 class ElectionEligibleYearLevelCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ElectionEligibleYearLevel
-        fields = ['year_level','election']
+        fields = ['year_level']
 
 class CandidateCreateSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = Candidate
-        fields = ['student_enrollment','election','partylist','position','image']
+        fields = ['student_enrollment','partylist','position','image']
 
 class PartylistCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,7 +34,7 @@ class PartylistCreateSerializer(serializers.ModelSerializer):
 class PartylistElectionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PartylistElection
-        fields = ['description','partylist','election']
+        fields = ['description','partylist']
 
 class ElectionCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,32 +47,5 @@ class VoteItemInputSerialzer(serializers.Serializer):
     )
     
 class VoteCreateSerializer(serializers.Serializer):
-    election = serializers.PrimaryKeyRelatedField(
-        queryset=Election.objects.none()
-    )
     vote_items = VoteItemInputSerialzer(many=True)
 
-
-    def __init__(self, *args,**kwargs):
-        user = kwargs['context']['request'].user
-        super().__init__(*args, **kwargs)
-
-        self.fields['election'].queryset = (
-            Election.objects.filter(
-                school_year__school=user.student_profile.school
-            )
-        )
-
-    def validate(self, attrs):
-        election = attrs['election']
-        vote_items = attrs['vote_items']
-
-        for item in vote_items:
-            candidate = item['candidate']
-
-            if candidate.election_id != election.id:
-                raise serializers.ValidationError(
-                    f'Candidate {candidate.id} not in election'
-                )
-
-        return attrs

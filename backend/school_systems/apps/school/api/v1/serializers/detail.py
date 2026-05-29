@@ -7,7 +7,7 @@ from apps.school.models.department import Department
 
 from .nested import SmallSchoolSerializer, SmallCourseSerializer, SmallDepartmentSerializer, SmallSchoolYearSerializer
 
-from apps.student.api.serializers.nested import SmallStudentSerializer
+from apps.student.api.v1.serializers.nested import SmallStudentSerializer
 
 class SchoolDetailSerializer(serializers.ModelSerializer):
     class Meta:

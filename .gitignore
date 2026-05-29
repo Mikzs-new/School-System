@@ -21,7 +21,7 @@ compose.yml
 .DS_Store
 Thumbs.db
 
-venv_voting/
+.venv/
 
 node_modules/
 
