@@ -1,22 +1,37 @@
 services:
   backend:
     build: ./backend
-    container_name: django_backend
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
     env_file:
       - ./backend/.env
     command: python school_systems/manage.py runserver 0.0.0.0:8000
-    volumes:
-      - ./backend:/school_systems
     ports:
       - "8000:8000"
 
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+
+        - action: rebuild
+          path: ./backend/requirements.txt
+
+    working_dir: /app
+
   frontend:
     build: ./frontend
-    container_name: react_frontend
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     ports:
       - "5173:5173"
+
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+
+    working_dir: /app

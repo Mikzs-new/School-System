@@ -3,7 +3,12 @@ from rest_framework import serializers
 from apps.student.models.student_enrollment import StudentEnrollment
 from apps.authentication.models.student_profile import StudentProfile
 
-from apps.school.api.serializers.nested import SmallCourseSerializer, SmallSchoolYearSerializer
+from apps.school.api.v1.serializers.nested import SmallCourseSerializer, SmallSchoolYearSerializer
+
+class SmallStudentNameSerialzer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentProfile
+        fields = ['full_name']
 
 class SmallStudentInfoSerializer(serializers.ModelSerializer):
     course = SmallCourseSerializer(read_only=True)

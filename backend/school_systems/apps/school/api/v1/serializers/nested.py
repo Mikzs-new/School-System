@@ -8,7 +8,7 @@ from apps.school.models.department import Department
 class SmallSchoolYearSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolYear
-        fields = ['name']
+        fields = ['id','name']
 
 class SmallCourseSerializer(serializers.ModelSerializer):
     class Meta:

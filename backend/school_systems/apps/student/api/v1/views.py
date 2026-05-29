@@ -9,12 +9,12 @@ from apps.authentication.models.student_profile import StudentProfile
 
 from .serializers.create import StudentCreateSerializer, StudentEnrollmentCreateSerializer
 from .serializers.detail import StudentDetailSerializer
-from .serializers.list import StudentListSerializer
+from .serializers.list import StudentListSerializer, StudentEnrollmentListSerializer
 
-from ..selectors.student_enrollment_selector import StudentEnrollmentSelector
-from ..services.student_enrollment_service import StudentEnrollmentService
-from ..services.imports.student_import_service import StudentImportService
-from ..services.student_service import StudentService
+from apps.student.selectors.student_enrollment_selector import StudentEnrollmentSelector
+from apps.student.services.student_enrollment_service import StudentEnrollmentService
+from apps.student.services.imports.student_import_service import StudentImportService
+from apps.student.services.student_service import StudentService
 
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
@@ -81,27 +81,34 @@ class StudentViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
     
-class StudentEnrollmentViewset(viewsets.GenericViewSet, mixins.CreateModelMixin):
+class StudentEnrollmentViewset(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, CanManageModel]
 
-    serializer_class = StudentEnrollmentCreateSerializer
-
     def get_queryset(self):
-        user = self.user
-
+        user = self.request.user
+        qs = StudentEnrollment.objects.all()
         if user.is_staff:
-            return StudentEnrollment.objects.all()
+            return qs
         elif hasattr(user, 'school_staff_profile'):
-            return StudentEnrollment.filter(
+            qs.filter(
                 school_year__school=user.school_staff_profile.school
             )
         elif hasattr(user, 'student_profile'):
-            return StudentEnrollment.filter(
+            qs.filter(
                 school_year__school=user.school_staff_profile.school,
                 student=user.school_staff_profile
             )
+        else:
+            return qs.none()
+        return qs
 
-    
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return StudentEnrollmentCreateSerializer
+        if self.action == 'list':
+            return StudentEnrollmentListSerializer
+        return StudentEnrollmentListSerializer
+
     def create(self,request):
         serializer = self.get_serializer(data=request.data)
         

@@ -14,7 +14,7 @@ from .serializers.profile.list import StudentProfileListSerializer, SchoolStaffP
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from ..services.email import send_password_reset_email
+from ...services.email import send_password_reset_email
 
 from apps.authentication.models.school_staff_profile import SchoolStaffProfile
 from apps.authentication.models.student_profile import StudentProfile

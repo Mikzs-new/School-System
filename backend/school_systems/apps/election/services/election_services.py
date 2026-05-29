@@ -7,7 +7,6 @@ from apps.election.models.eligibility import ElectionEligibleCourse, ElectionEli
 from apps.election.models.vote import Vote, VoteItem
 from apps.election.models.candidate import Candidate
 
-
 from apps.student.models import StudentEnrollment
 
 from apps.analytics.models import ElectionAnalyticsSnapshot, CandidateAnalyticsSnapshot

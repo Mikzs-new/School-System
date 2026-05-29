@@ -11,7 +11,7 @@ from apps.school.models.school_year import SchoolYear
 from apps.student.models.student_enrollment import StudentEnrollment
 from apps.authentication.models.student_profile import StudentProfile
 
-from ...api.serializers.create import StudentCreateSerializer
+from apps.student.api.v1.serializers.create import StudentCreateSerializer
 
 from shared.utils.auth.groups import get_student_group
 
