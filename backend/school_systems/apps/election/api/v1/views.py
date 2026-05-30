@@ -461,7 +461,7 @@ class VoteViewSet(viewsets.GenericViewSet,
 
         vote = VoteService.cast_vote(
             student_profile=request.user.student_profile, 
-            electi=election
+            election=election
             **serializer.validated_data
         )
 
@@ -529,66 +529,4 @@ class CandidateViewSet(viewsets.GenericViewSet,
 
         return Response({'message':'Candidate created', 'id': candidate.id}, status=status.HTTP_201_CREATED)    
 
-class CandidateViewSet(viewsets.ModelViewSet):
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
-    def get_permissions(self):
-
-        if self.action in ['list','retrieve']:
-            return [IsAuthenticated()]
-
-        return [IsAuthenticated(), CanManageElection()]
-
-    def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            queryset = Candidate.objects.all()
-        elif hasattr(user, 'school_staff_profile'):
-            queryset = Candidate.objects.filter(
-                election__school_year__school=user.school_staff_profile.school
-            )
-        
-        elif hasattr(user, 'student_profile'):
-            queryset = Candidate.objects.filter(
-                election__school_year__school=user.student_profile.school
-            )
-        else: 
-            return Candidate.objects.none()
-        
-        election = self.request.query_params.get('election')
-
-        if election:
-            queryset = queryset.filter(
-                election=election
-            )
-
-        return queryset
-
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return CandidateDetailSerializer
-        elif self.action == 'create':
-            return CandidateCreateSerializer
-        elif self.action == 'list':
-            return CandidateListSerializer
-        return CandidateListSerializer
-    
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data
-        )
-
-        serializer.is_valid(raise_exception=True)
-
-        if not hasattr(request.user, 'school_staff_profile'):
-            raise ValidationError("Only staff can create candidate")
-
-        school_staff_profile = request.user.school_staff_profile
-
-        candidate = CandidateService.create_candidate(
-            school_staff_profile=school_staff_profile,
-            **serializer.validated_data
-        )
-
-        return Response({'message':'Candidate created', 'id': candidate.id}, status=status.HTTP_201_CREATED)    
    
