@@ -140,10 +140,27 @@ class ElectionViewSet(viewsets.ModelViewSet):
         if not hasattr(user, 'school_staff_profile'):
             raise ValidationError('User has no permission')
 
-        election_snapshot = ElectionService.generate_snapshot(schooL_staff_profile=user.school_staff_profile,election=election)
+        election_snapshot = ElectionService.generate_snapshot(school_staff_profile=user.school_staff_profile,election=election)
 
         return Response({"message": "Election ended and records saved successfully", "id": election_snapshot.id},status=status.HTTP_202_ACCEPTED)
     
+    @action(detail=True, methods=['post'])
+    def start_election(self, request, pk=None):
+        election = self.get_object()
+
+        if election.status != ElectionStatus.DRAFTED:
+            raise ValidationError('Election current status is not drafted')
+        
+        user = request.user
+
+        election.status = ElectionStatus.ENABLED
+        election.save(update_fields=['status'])
+        
+        Election.objects.filter(election=election).update(status=ElectionStatus.ENABLED)
+
+        return Response({'message': 'Election started successfully'}, status=status.HTTP_200_OK)
+
+
     @action(detail=True, methods=['get'])
     def results(self, request, pk=None):
         election = self.get_object()
@@ -279,7 +296,7 @@ class ElectionEligiblePositionViewSet(viewsets.GenericViewSet,
 
         position = ElectionService.create_position(
             school_staff_profile=school_staff_profile,
-            election=election
+            election=election,
             **serializer.validated_data
         )
 
@@ -461,7 +478,7 @@ class VoteViewSet(viewsets.GenericViewSet,
 
         vote = VoteService.cast_vote(
             student_profile=request.user.student_profile, 
-            election=election
+            election=election,
             **serializer.validated_data
         )
 
