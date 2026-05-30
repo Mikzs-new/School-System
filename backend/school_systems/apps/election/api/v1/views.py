@@ -14,9 +14,11 @@ from apps.election.models.eligibility import PartylistElection, ElectionEligible
 from apps.election.models.partylist import Partylist
 from apps.election.models.vote import Vote
 
+from apps.student.models import StudentEnrollment
+
 from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, ElectionEligiblePositionCreateSerializer, VoteCreateSerializer, PartylistElection, ElectionEligibleCourseCreateSerializer, ElectionEligibleYearLevelCreateSerializer, PartylistElectionCreateSerializer
 from .serializers.detail import ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer, ElectionResultSerializer
-from .serializers.list import ElectionListSerializer, PartylistListSerializer, CandidateListSerializer, ElectionEligibleCourseListSerializer, ElectionEligiblePositionListSerializer, ElectionEligibleYearLevelListSerializer, PartylistElectionListSerializer, VoteListSerializer
+from .serializers.list import ElectionListSerializer, PartylistListSerializer, CandidateListSerializer, ElectionEligibleCourseListSerializer, ElectionEligiblePositionListSerializer, ElectionEligibleYearLevelListSerializer, PartylistElectionListSerializer, VoteListSerializer, EligibleStudentsListSerializer, VotingCandidatesListSerializer
 from .serializers.update import ElectionUpdateSerializer
 
 from apps.election.services.vote_services import VoteService
@@ -150,6 +152,30 @@ class ElectionViewSet(viewsets.ModelViewSet):
             raise ValidationError('Election results are not avaliable yet')
         
         serializer = ElectionResultSerializer(election)
+
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def students(self, request, pk=None):
+
+        if not hasattr(self.request.user, 'school_staff_profile'):
+            raise ValidationError('No permission to access')
+
+        election = self.get_object()
+
+        year_levels = ElectionEligibleYearLevel.objects.filter(election=election).values_list('year_level', flat=True)
+        courses = ElectionEligibleCourse.objects.filter(election=election).values_list('course', flat=True)
+
+        students = StudentEnrollment.objects.select_related(
+            'student',
+            'course'
+        ).filter(
+            school_year=election.school_year,
+            year_level__in=year_levels,
+            course__in=courses
+        )
+
+        serializer = EligibleStudentsListSerializer(students,many=True)
 
         return Response(serializer.data)
 
@@ -392,7 +418,7 @@ class VoteViewSet(viewsets.GenericViewSet,
                                     mixins.ListModelMixin):
     def get_permissions(self):
         if self.action == 'list':
-            return [IsAuthenticated(), CanManageElection()]
+            return [IsAuthenticated()]
         return [IsAuthenticated(), CanVote()]
 
     def get_election(self):
@@ -411,11 +437,12 @@ class VoteViewSet(viewsets.GenericViewSet,
         return Vote.objects.filter(election=election)
 
     def get_serializer_class(self):
+        user = self.request.user
         if self.action == 'create':
             return VoteCreateSerializer
-        if self.action == 'list':
-            return VoteListSerializer
-        return VoteListSerializer
+        elif self.action == 'list':
+            return VotingCandidatesListSerializer
+        return VotingCandidatesListSerializer
     
     def create(self, request, *args, **kwargs):
 
@@ -438,7 +465,12 @@ class VoteViewSet(viewsets.GenericViewSet,
             **serializer.validated_data
         )
 
-        return Response({'message': 'vote_submitted', 'vote':vote.id},status=status.HTTP_201_CREATED)
+        return Response({'message': 'vote submitted', 'vote':vote.id},status=status.HTTP_201_CREATED)
+    def list(self, request, *args, **kwargs):
+        election = self.get_election()
+        positions = ElectionEligiblePosition.objects.filter(election=election)
+        serializer = VotingCandidatesListSerializer(positions,many=True)
+        return Response(serializer.data)
 
 class CandidateViewSet(viewsets.GenericViewSet, 
                                     mixins.CreateModelMixin,
