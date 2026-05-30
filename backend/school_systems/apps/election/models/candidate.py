@@ -28,7 +28,8 @@ class Candidate(TimeStampedModel):
         PartylistElection,
         on_delete=models.CASCADE,
         related_name='candidates',
-        null=True
+        null=True,
+        blank=True
     )
     # added_by = models.ForeignKey(
     #     Facilitator,

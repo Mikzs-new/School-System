@@ -134,6 +134,9 @@ class ElectionViewSet(viewsets.ModelViewSet):
                 'Only staff can update election time'
             )
 
+        if election.status != ElectionStatus.DRAFTED:
+            raise ValidationError('Cannot make changes in election')
+
         serializer = ElectionUpdateTimeSerializer(
             data=request.data
         )
