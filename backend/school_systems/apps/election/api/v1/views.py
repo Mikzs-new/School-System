@@ -19,7 +19,7 @@ from apps.student.models import StudentEnrollment
 from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, ElectionEligiblePositionCreateSerializer, VoteCreateSerializer, PartylistElection, ElectionEligibleCourseCreateSerializer, ElectionEligibleYearLevelCreateSerializer, PartylistElectionCreateSerializer
 from .serializers.detail import ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer, ElectionResultSerializer
 from .serializers.list import ElectionListSerializer, PartylistListSerializer, CandidateListSerializer, ElectionEligibleCourseListSerializer, ElectionEligiblePositionListSerializer, ElectionEligibleYearLevelListSerializer, PartylistElectionListSerializer, VoteListSerializer, EligibleStudentsListSerializer, VotingCandidatesListSerializer
-from .serializers.update import ElectionUpdateSerializer
+from .serializers.update import ElectionUpdateSerializer, ElectionUpdateTimeSerializer
 
 from apps.election.services.vote_services import VoteService
 from apps.election.services.election_services import ElectionService
@@ -124,6 +124,32 @@ class ElectionViewSet(viewsets.ModelViewSet):
         )
 
         return Response({'message':'Election created', 'id': election.id}, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['patch'])
+    def update_time(self, request, pk=None):
+        election = self.get_object()
+
+        if not hasattr(request.user, 'school_staff_profile'):
+            raise ValidationError(
+                'Only staff can update election time'
+            )
+
+        serializer = ElectionUpdateTimeSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        ElectionService.update_time(
+            election=election,
+            start_datetime=serializer.validated_data['start_datetime'],
+            end_datetime=serializer.validated_data['end_datetime']
+        )
+
+        return Response(
+            {'message': 'Election schedule updated successfully'},
+            status=status.HTTP_200_OK
+        )
 
     @action(detail=True, methods=['post'])
     def end_election(self, request, pk=None):
