@@ -16,6 +16,8 @@ from apps.election.models.vote import Vote
 
 from apps.student.models import StudentEnrollment
 
+from apps.analytics.models import ElectionAnalyticsSnapshot
+
 from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, ElectionEligiblePositionCreateSerializer, VoteCreateSerializer, PartylistElection, ElectionEligibleCourseCreateSerializer, ElectionEligibleYearLevelCreateSerializer, PartylistElectionCreateSerializer
 from .serializers.detail import ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer, ElectionResultSerializer
 from .serializers.list import ElectionListSerializer, PartylistListSerializer, CandidateListSerializer, ElectionEligibleCourseListSerializer, ElectionEligiblePositionListSerializer, ElectionEligibleYearLevelListSerializer, PartylistElectionListSerializer, VoteListSerializer, EligibleStudentsListSerializer, VotingCandidatesListSerializer
@@ -185,7 +187,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
         election.status = ElectionStatus.ENABLED
         election.save(update_fields=['status'])
         
-        Election.objects.filter(election=election).update(status=ElectionStatus.ENABLED)
+        Election.objects.filter(id=election.id).update(status=ElectionStatus.ENABLED)
 
         return Response({'message': 'Election started successfully'}, status=status.HTTP_200_OK)
 
@@ -197,7 +199,9 @@ class ElectionViewSet(viewsets.ModelViewSet):
         if election.status != ElectionStatus.ENDED:
             raise ValidationError('Election results are not avaliable yet')
         
-        serializer = ElectionResultSerializer(election)
+        analytics = ElectionAnalyticsSnapshot.objects.get(election=election)
+
+        serializer = ElectionResultSerializer(analytics)
 
         return Response(serializer.data)
 

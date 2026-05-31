@@ -1,17 +1,13 @@
 import { useEffect, useState } from "react"
 
-import { useNavigate } from "react-router-dom"
-
 import {
   getElections,
   createElection,
-} from "../../services/electionService"
+} from "../../api/elections"
 
 
 
-function ElectionsPage() {
-
-  const navigate = useNavigate()
+function ElectionsPage({ onNavigateToPositions }) {
 
 
 
@@ -287,9 +283,7 @@ function ElectionsPage() {
 
               <button
                 onClick={() =>
-                  navigate(
-                    `/facilitator/elections/${election.id}/positions`
-                  )
+                  onNavigateToPositions(election.id)
                 }
                 className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl transition"
               >

@@ -1,19 +1,14 @@
 import { useState } from "react"
 
-import { useNavigate } from "react-router-dom"
+import AuthLayout from "../../components/layout/AuthLayout"
 
-import AuthLayout from "../../layouts/AuthLayout"
+import { login as apiLogin } from "../../api/auth"
 
-import { loginUser } from "../../services/authService"
-
-import { useAuth } from "../../context/AuthContext"
+import { authStore } from "../../state/authStore"
 
 
 
-function LoginPage() {
-  const navigate = useNavigate()
-
-  const { login } = useAuth()
+function LoginPage({ onAuthenticated }) {
 
 
 
@@ -54,7 +49,7 @@ function LoginPage() {
 
     try {
       const response =
-        await loginUser(formData)
+        await apiLogin(formData)
 
 
 
@@ -72,44 +67,13 @@ function LoginPage() {
 
 
 
-      login(
+      authStore.login(
         response.user || {},
         accessToken,
         response.role
       )
 
-
-
-      if (
-        response.role ===
-        "school_staff"
-      ) {
-        navigate(
-          "/facilitator/dashboard"
-        )
-      }
-
-      else if (
-        response.role ===
-        "student"
-      ) {
-        navigate(
-          "/student/dashboard"
-        )
-      }
-
-      else if (
-        response.role ===
-        "admin"
-      ) {
-        navigate(
-          "/admin/dashboard"
-        )
-      }
-
-      else {
-        navigate("/")
-      }
+      onAuthenticated()
     }
 
 
@@ -212,11 +176,6 @@ function LoginPage() {
           <div className="flex justify-end">
             <button
               type="button"
-              onClick={() =>
-                navigate(
-                  "/forgot-password"
-                )
-              }
               className="text-sm text-blue-400 hover:text-blue-300 transition"
             >
               Forgot Password?

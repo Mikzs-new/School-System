@@ -1,8 +1,8 @@
 import { useState } from "react"
 
-import AuthLayout from "../../layouts/AuthLayout"
+import AuthLayout from "../../components/layout/AuthLayout"
 
-import api from "../../services/api"
+import api from "../../api/apiClient"
 
 
 
@@ -29,7 +29,7 @@ function ForgotPasswordPage() {
 
 
     try {
-      const response = await api.post(
+      const response = await apiClient.post(
         "/auth/forgot_password/",
         {
           email,

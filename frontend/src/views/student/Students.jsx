@@ -8,7 +8,7 @@ import {
 
 import { useEffect, useState } from "react";
 
-import api from "../../services/apiClient";
+import apiClient from "../../api/apiClient";
 
 export default function Students() {
 
@@ -47,7 +47,7 @@ export default function Students() {
     try {
 
       const response =
-        await api.get(
+        await apiClient.get(
           "/api/v1/student/records/"
         );
 
@@ -73,7 +73,7 @@ export default function Students() {
     try {
 
       const response =
-        await api.get(
+        await apiClient.get(
           "/api/v1/school/courses/"
         );
 
@@ -107,7 +107,7 @@ export default function Students() {
         file
       );
 
-      await api.post(
+      await apiClient.post(
         "/api/v1/student/import-csv/",
         form,
         {
@@ -209,7 +209,7 @@ export default function Students() {
       );
 
       const response =
-        await api.post(
+        await apiClient.post(
           "/api/v1/student/records/",
           payload
         );

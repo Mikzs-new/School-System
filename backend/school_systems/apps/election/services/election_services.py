@@ -120,7 +120,7 @@ class ElectionService:
         
     @staticmethod
     @transaction.atomic
-    def generate_snapshot(schooL_staff_profile,election):
+    def generate_snapshot(school_staff_profile,election):
         election.status = ElectionStatus.ENDED
         election.save()
         school_year = election.school_year
@@ -149,6 +149,8 @@ class ElectionService:
             total_votes=Count('vote_items')
         )
 
+        
+
         candidate_analytics_create = []
 
         positions = ElectionEligiblePosition.objects.filter(election=election)
@@ -168,12 +170,12 @@ class ElectionService:
             #     c.total_votes
             #     for c in position_candidates
             # )
-
+            
             ranking = 1
 
             for candidate in position_candidates:
                 if total_votes > 0:
-                    percentage = candidate.total_votes / total_votes * 100
+                    percentage = candidate.total_votes / total_possible_votes * 100
                 else:
                     percentage = 0
                 candidate_analytics_create.append(

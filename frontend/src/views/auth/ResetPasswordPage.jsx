@@ -1,20 +1,12 @@
 import { useState } from "react"
 
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom"
+import apiClient from "../../api/apiClient"
 
-import api from "../../services/api"
-
-import AuthLayout from "../../layouts/AuthLayout"
+import AuthLayout from "../../components/layout/AuthLayout"
 
 
 
-function ResetPasswordPage() {
-  const navigate = useNavigate()
-
-  const { uid, token } = useParams()
+function ResetPasswordPage({ uid, token, onResetComplete }) {
 
 
 
@@ -69,7 +61,7 @@ function ResetPasswordPage() {
     try {
       setLoading(true)
 
-      const response = await api.post(
+      const response = await apiClient.post(
         "/auth/reset_password/",
         {
           uid,
@@ -87,7 +79,7 @@ function ResetPasswordPage() {
 
 
       setTimeout(() => {
-        navigate("/")
+        onResetComplete()
       }, 2000)
     }
 

@@ -1,11 +1,8 @@
-import { Link, Outlet } from "react-router-dom"
-
-import { useAuth } from "../context/AuthContext"
+import { logout } from "../../api/auth"
 
 
 
-function FacilitatorLayout() {
-  const { logout } = useAuth()
+function FacilitatorLayout({ children, onLogout }) {
 
 
 
@@ -29,48 +26,43 @@ function FacilitatorLayout() {
 
         <nav className="flex flex-col gap-2">
           
-          <Link
-            to="/facilitator/dashboard"
-            className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition"
+          <button
+            className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition text-left"
           >
             Dashboard
-          </Link>
+          </button>
 
 
 
-          <Link
-            to="/facilitator/elections"
-            className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition"
+          <button
+            className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition text-left"
           >
             Elections
-          </Link>
+          </button>
 
 
 
-          <Link
-            to="/facilitator/candidates"
-            className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition"
+          <button
+            className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition text-left"
           >
             Candidates
-          </Link>
+          </button>
 
 
 
-          <Link
-            to="/facilitator/students"
-            className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition"
+          <button
+            className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition text-left"
           >
             Students
-          </Link>
+          </button>
 
 
 
-          <Link
-            to="/facilitator/results"
-            className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition"
+          <button
+            className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition text-left"
           >
             Results
-          </Link>
+          </button>
         </nav>
 
 
