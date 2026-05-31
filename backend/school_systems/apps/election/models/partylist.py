@@ -11,7 +11,6 @@ class Partylist(TimeStampedModel):
         on_delete=models.CASCADE,
         null=True
     )
-    initials = models.CharField(max_length=20, blank=True)
     # added_by = models.ForeignKey(
     #     Facilitator,
     #     on_delete=models.CASCADE,

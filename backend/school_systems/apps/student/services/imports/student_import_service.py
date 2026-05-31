@@ -8,7 +8,6 @@ from shared.utils.helper.create_user import create_user
 import csv
 
 from apps.school.models.school_year import SchoolYear 
-from apps.school.models import Course
 from apps.student.models.student_enrollment import StudentEnrollment
 from apps.authentication.models.student_profile import StudentProfile
 
@@ -34,11 +33,6 @@ class StudentImportService:
         users_to_update = []
         student_infos_to_create = []
         seen_student_ids = set()
-        
-        courses = {
-            c.name.strip().lower(): c.id
-            for c in Course.objects.filter(school=school)
-        }
 
         school = school_staff_profile.school
 
@@ -60,17 +54,6 @@ class StudentImportService:
 
             row_number = index + 2
             
-            course = row['course'].strip().lower()
-
-            if not course in courses:
-                errors.append({
-                    'row': row_number,
-                    'error': f'{row["course"]} is not an existing course'
-                })
-                continue
-
-            row['course'] = courses[course]
-
             serializer = StudentCreateSerializer(data=row,school=school)
 
             if not serializer.is_valid():

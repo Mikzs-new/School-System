@@ -15,6 +15,20 @@ export default function ElectionDetail({
   election,
   onBack
 }) {
+  const [showCourseModal, setShowCourseModal] =
+  useState(false)
+
+const [showYearModal, setShowYearModal] =
+  useState(false)
+
+const [showPositionModal, setShowPositionModal] =
+  useState(false)
+
+const [showPartylistModal, setShowPartylistModal] =
+  useState(false)
+
+const [showCandidateModal, setShowCandidateModal] =
+  useState(false) 
 
   const [details, setDetails] =
     useState(null)
@@ -135,13 +149,19 @@ export default function ElectionDetail({
 
               <div className="config-title">
 
+              <div className="config-title-left">
                 <GraduationCap size={18} />
-
-                <h3>
-                  Allowed Courses
-                </h3>
-
+                <h3>Allowed Courses</h3>
               </div>
+
+              <button
+                className="workspace-primary-btn"
+                onClick={() => setShowCourseModal(true)}
+              >
+                + Add
+              </button>
+
+            </div>
 
               <div className="config-list">
 
@@ -179,13 +199,19 @@ export default function ElectionDetail({
 
               <div className="config-title">
 
-                <Layers3 size={18} />
-
-                <h3>
-                  Year Levels
-                </h3>
-
+              <div className="config-title-left">
+                <GraduationCap size={18} />
+                <h3>Year Level</h3>
               </div>
+
+              <button
+                className="workspace-primary-btn"
+                onClick={() => setShowYearModal(true)}
+              >
+                + Add
+              </button>
+
+            </div>
 
               <div className="config-list">
 
@@ -222,11 +248,17 @@ export default function ElectionDetail({
 
               <div className="config-title">
 
-                <ListChecks size={18} />
+                <div className="config-title-left">
+                  <GraduationCap size={18} />
+                  <h3>Possitions</h3>
+                </div>
 
-                <h3>
-                  Positions
-                </h3>
+                <button
+                  className="workspace-primary-btn"
+                  onClick={() => setShowPositionModal(true)}
+                >
+                  + Add
+                </button>
 
               </div>
 
@@ -279,11 +311,17 @@ export default function ElectionDetail({
 
               <div className="config-title">
 
-                <ShieldCheck size={18} />
+                <div className="config-title-left">
+                  <GraduationCap size={18} />
+                  <h3>Partylist</h3>
+                </div>
 
-                <h3>
-                  Partylists
-                </h3>
+                <button
+                  className="workspace-primary-btn"
+                  onClick={() => setShowPartylistModal(true)}
+                >
+                  + Add
+                </button>
 
               </div>
 
@@ -325,13 +363,19 @@ export default function ElectionDetail({
 
               <div className="config-title">
 
-                <Users size={18} />
-
-                <h3>
-                  Candidates
-                </h3>
-
+              <div className="config-title-left">
+                <GraduationCap size={18} />
+                <h3>Candidates</h3>
               </div>
+
+              <button
+                className="workspace-primary-btn"
+               onClick={() => setShowCandidateModal(true)}
+              >
+                + Add
+              </button>
+
+            </div>
 
               <div className="config-list">
 
@@ -346,14 +390,20 @@ export default function ElectionDetail({
                       className="config-item"
                     >
 
-                      {candidate.student ||
-                        'Unknown Student'}
+                      {
+                              candidate.partylist?.partylist?.name
 
-                      {' — '}
+                                ? `${candidate.student_enrollment?.student}
+                                  (${candidate.partylist.partylist.name})`
 
-                      {getPositionTitle(
-                        candidate.position
-                      )}
+                                : candidate.student_enrollment?.student
+                            }
+
+                            —
+
+                            {
+                              candidate.position?.title
+                            }
 
                     </button>
 
@@ -389,7 +439,42 @@ export default function ElectionDetail({
         </div>
 
       )}
+      <div className="config-card">
+
+  <div className="config-title">
+
+    <Users size={18} />
+
+    <h3>
+      Eligible Voters
+    </h3>
+
+  </div>
+
+  <div className="config-list">
+
+    <button
+      className="config-item"
+    >
+
+      Total Eligible:
+
+      {
+
+        details?.eligible_voters_count ||
+
+        0
+
+      }
+
+    </button>
+
+  </div>
+
+</div>
 
     </div>
+    
   )
+  
 }

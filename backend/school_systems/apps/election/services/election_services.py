@@ -190,18 +190,3 @@ class ElectionService:
 
         return election_snapshot
     
-    @staticmethod
-    @transaction.atomic
-    def update_time(*, election, start_datetime, end_datetime):
-        election.start_datetime = start_datetime
-        election.end_datetime = end_datetime
-
-        election.full_clean()
-        election.save(
-            update_fields=[
-                'start_datetime',
-                'end_datetime'
-            ]
-        )
-
-        return election
