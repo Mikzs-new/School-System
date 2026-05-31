@@ -173,7 +173,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
 
         election_snapshot = ElectionService.generate_snapshot(school_staff_profile=user.school_staff_profile,election=election)
 
-        return Response({"message": "Election ended and records saved successfully", "id": election_snapshot.id},status=status.HTTP_202_ACCEPTED)
+        return Response({"message": "Election ended and records saved successfully", "id": election_snapshot.id}, status=status.HTTP_200_OK)
     
     @action(detail=True, methods=['post'])
     def start_election(self, request, pk=None):
@@ -184,10 +184,11 @@ class ElectionViewSet(viewsets.ModelViewSet):
         
         user = request.user
 
-        election.status = ElectionStatus.ENABLED
+        election.status = ElectionStatus.ACTIVE
         election.save(update_fields=['status'])
         
-        Election.objects.filter(id=election.id).update(status=ElectionStatus.ENABLED)
+        # Also update any related records
+        Election.objects.filter(id=election.id).update(status=ElectionStatus.ACTIVE)
 
         return Response({'message': 'Election started successfully'}, status=status.HTTP_200_OK)
 
@@ -197,13 +198,14 @@ class ElectionViewSet(viewsets.ModelViewSet):
         election = self.get_object()
 
         if election.status != ElectionStatus.ENDED:
-            raise ValidationError('Election results are not avaliable yet')
+            raise ValidationError('Election results are not available yet')
         
-        analytics = ElectionAnalyticsSnapshot.objects.get(election=election)
-
-        serializer = ElectionResultSerializer(analytics)
-
-        return Response(serializer.data)
+        try:
+            snapshot = ElectionAnalyticsSnapshot.objects.get(election=election)
+            serializer = ElectionResultSerializer(snapshot)
+            return Response(serializer.data)
+        except ElectionAnalyticsSnapshot.DoesNotExist:
+            raise ValidationError('Election results have not been generated yet')
 
     @action(detail=True, methods=['get'])
     def students(self, request, pk=None):

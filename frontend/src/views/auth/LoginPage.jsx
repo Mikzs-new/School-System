@@ -1,193 +1,222 @@
-import { useState } from "react"
+import React, { useState } from 'react';
 
-import AuthLayout from "../../components/layout/AuthLayout"
+import {
+  LockKeyhole,
+  ShieldCheck,
+  UserRound
+} from 'lucide-react';
 
-import { login as apiLogin } from "../../api/auth"
+import { login } from '../../api/auth.js';
 
-import { authStore } from "../../state/authStore"
+import ForgotPasswordPage from './ForgotPasswordPage.jsx';
 
+export default function LoginPage({
+  onAuthenticated
+}) {
 
+  const [page, setPage] =
+    useState('login');
 
-function LoginPage({ onAuthenticated }) {
-
-
-
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  })
-
-
-
-  const [loading, setLoading] =
-    useState(false)
+  const [form, setForm] =
+    useState({
+      username: '',
+      password: ''
+    });
 
   const [error, setError] =
-    useState("")
+    useState('');
 
+  const [isSubmitting,
+    setIsSubmitting] =
+    useState(false);
 
+  /* PAGE SWITCH */
 
-  const handleChange = (event) => {
-    const { name, value } = event.target
+  if (page === 'forgot') {
 
-    setFormData((previousData) => ({
-      ...previousData,
-      [name]: value,
-    }))
+    return (
+      <ForgotPasswordPage
+        onBack={() =>
+          setPage('login')
+        }
+      />
+    );
   }
 
+  /* INPUT */
 
+  const handleChange = (
+    event
+  ) => {
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
+    setForm((current) => ({
+      ...current,
+      [event.target.name]:
+        event.target.value
+    }));
+  };
 
-    setLoading(true)
+  /* LOGIN */
 
-    setError("")
+  const handleSubmit =
+    async (event) => {
 
+      event.preventDefault();
 
+      setError('');
 
-    try {
-      const response =
-        await apiLogin(formData)
+      setIsSubmitting(true);
 
+      try {
 
+        await login(form);
 
-      console.log(
-        "LOGIN SUCCESS:",
-        response
-      )
+        onAuthenticated();
 
+      } catch (requestError) {
 
+        setError(
+          requestError.message
+        );
 
-      const accessToken =
-        response.access ||
-        response.access_token ||
-        response.token
+      } finally {
 
+        setIsSubmitting(false);
 
-
-      authStore.login(
-        response.user || {},
-        accessToken,
-        response.role
-      )
-
-      onAuthenticated()
-    }
-
-
-
-    catch (error) {
-      console.error(error)
-
-      setError(
-        error.response?.data?.detail ||
-        "Invalid username or password"
-      )
-    }
-
-
-
-    finally {
-      setLoading(false)
-    }
-  }
-
-
+      }
+    };
 
   return (
-    <AuthLayout>
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-2xl shadow-2xl">
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            Online Voting System
-          </h1>
+    <main className="login-page">
 
-          <p className="text-zinc-400 mt-2">
-            Ramon Magsaysay Memorial Colleges
-          </p>
+      <section
+        className="login-panel"
+        aria-labelledby="login-title"
+      >
+
+        <div className="login-heading">
+
+          <span className="brand-mark large">
+            SV
+          </span>
+
+          <div>
+
+            <h1 id="login-title">
+              School Voting
+            </h1>
+
+            <p>
+              Sign in to the academic
+              election workspace
+            </p>
+
+          </div>
+
         </div>
 
-
-
         <form
+          className="login-form"
           onSubmit={handleSubmit}
-          className="space-y-5"
         >
 
-          <div>
-            <label className="block text-sm text-zinc-300 mb-2">
-              Username
-            </label>
+          {/* USERNAME */}
 
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Enter your username"
-              className="w-full bg-zinc-950 border border-zinc-700 text-white px-4 py-3 rounded-xl outline-none focus:border-blue-500"
-            />
-          </div>
+          <label>
 
+            <span>Username</span>
 
+            <div className="input-frame">
 
-          <div>
-            <label className="block text-sm text-zinc-300 mb-2">
-              Password
-            </label>
+              <UserRound size={18} />
 
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className="w-full bg-zinc-950 border border-zinc-700 text-white px-4 py-3 rounded-xl outline-none focus:border-blue-500"
-            />
-          </div>
+              <input
+                autoComplete="username"
+                autoFocus
+                name="username"
+                onChange={handleChange}
+                required
+                type="text"
+                value={form.username}
+              />
 
+            </div>
 
+          </label>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm">
+          {/* PASSWORD */}
+
+          <label>
+
+            <span>Password</span>
+
+            <div className="input-frame">
+
+              <LockKeyhole size={18} />
+
+              <input
+                autoComplete="current-password"
+                name="password"
+                onChange={handleChange}
+                required
+                type="password"
+                value={form.password}
+              />
+
+            </div>
+
+          </label>
+
+          {/* ERROR */}
+
+          {error ? (
+            <div className="error-banner">
               {error}
             </div>
-          )}
+          ) : null}
 
-
+          {/* LOGIN BUTTON */}
 
           <button
+            className="
+              primary-button
+              full-width
+            "
+            disabled={isSubmitting}
             type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-3 rounded-xl font-semibold transition"
           >
+
+            <ShieldCheck size={18} />
+
             {
-              loading
-                ? "Signing In..."
-                : "Sign In"
+              isSubmitting
+                ? 'Signing in...'
+                : 'Sign in'
             }
+
           </button>
 
+          {/* FOOTER */}
 
+          <div className="login-footer">
 
-          <div className="flex justify-end">
             <button
               type="button"
-              className="text-sm text-blue-400 hover:text-blue-300 transition"
+              className="forgot-link"
+              onClick={() =>
+                setPage('forgot')
+              }
             >
               Forgot Password?
             </button>
+
           </div>
 
         </form>
-      </div>
-    </AuthLayout>
-  )
+
+      </section>
+
+    </main>
+  );
 }
-
-
-
-export default LoginPage

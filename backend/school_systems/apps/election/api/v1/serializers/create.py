@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from django.utils import timezone
+from django.conf import settings
 
 from apps.election.models.election import Election
 from apps.election.models.candidate import Candidate
@@ -40,6 +42,15 @@ class ElectionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Election
         fields = ['name','description','start_datetime','end_datetime']
+
+    def validate(self, attrs):
+        # Ensure datetimes are timezone-aware using the configured timezone
+        if attrs['start_datetime'].tzinfo is None:
+            attrs['start_datetime'] = timezone.make_aware(attrs['start_datetime'], timezone.get_current_timezone())
+        if attrs['end_datetime'].tzinfo is None:
+            attrs['end_datetime'] = timezone.make_aware(attrs['end_datetime'], timezone.get_current_timezone())
+        
+        return attrs
 
 class VoteItemInputSerialzer(serializers.Serializer):
     candidate = serializers.PrimaryKeyRelatedField(

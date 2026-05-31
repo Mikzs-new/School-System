@@ -157,25 +157,20 @@ class ElectionService:
 
         for position in positions:
 
-            position_candidates = [
-                c for c in candidates
-                if c.position_id == position.id
-            ]
-
             position_candidates = candidates.filter(
                 position=position
             ).order_by('-total_votes')
 
-            # total_position_votes = sum(
-            #     c.total_votes
-            #     for c in position_candidates
-            # )
-            
+            total_position_votes = sum(
+                c.total_votes
+                for c in position_candidates
+            )
+
             ranking = 1
 
             for candidate in position_candidates:
-                if total_votes > 0:
-                    percentage = candidate.total_votes / total_possible_votes * 100
+                if total_position_votes > 0:
+                    percentage = candidate.total_votes / total_position_votes * 100
                 else:
                     percentage = 0
                 candidate_analytics_create.append(

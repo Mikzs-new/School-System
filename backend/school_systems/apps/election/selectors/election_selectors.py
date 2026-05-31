@@ -33,7 +33,7 @@ class ElectionSelector:
                     valid_courses__course=enrollment.course,
                     valid_year_levels__year_level=enrollment.year_level
                 )
-            status = [ElectionStatus.ENABLED,ElectionStatus.ENDED]
+            status = [ElectionStatus.ACTIVE,ElectionStatus.ENDED]
             return qs.filter(query,status__in=status).distinct()
         
         return qs.none()

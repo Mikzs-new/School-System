@@ -9,11 +9,12 @@ from apps.school.models.school_year import SchoolYear
 from datetime import timedelta
 
 class ElectionStatus(models.TextChoices):
-    ENABLED = 'enabled', 'Enabled'
+    DRAFTED = 'drafted', 'Drafted'
+    SCHEDULED = 'scheduled', 'Scheduled'
+    ACTIVE = 'active', 'Active'
+    ENDED = 'ended', 'Ended'
     PAUSED = 'paused', 'Paused'
     CANCELLED = 'cancelled', 'Cancelled'
-    ENDED = 'ended', 'Ended'
-    DRAFTED = 'drafted', 'Drafted'
 
 class Election(TimeStampedModel):
     name = models.CharField(max_length=255)
@@ -75,7 +76,7 @@ class Election(TimeStampedModel):
 
     @property
     def is_active(self):
-        if self.status != ElectionStatus.ENABLED:
+        if self.status != ElectionStatus.ACTIVE:
             return False
         time = timezone.now()
         print(time)

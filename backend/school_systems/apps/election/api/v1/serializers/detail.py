@@ -82,7 +82,6 @@ class ElectionResultSerializer(serializers.ModelSerializer):
 
     def get_candidate_results(self, obj):
         election = obj.election
-        snapshot = ElectionAnalyticsSnapshot.objects.get(election=election)
         positions = ElectionEligiblePosition.objects.filter(
             election=election
         )
@@ -102,7 +101,7 @@ class ElectionResultSerializer(serializers.ModelSerializer):
             )
 
             abstained = (
-                snapshot.total_possible_votes
+                obj.total_possible_votes
                 - total_position_votes
             )
 

@@ -22,7 +22,6 @@ import {
 import Login from './views/auth/LoginPage.jsx';
 import Dashboard from './views/facilitator/DashboardPage.jsx';
 import Elections from './views/facilitator/ElectionsPage.jsx';
-import ElectionPositions from './views/facilitator/ElectionPositionsPage.jsx';
 import Candidates from './views/facilitator/CandidatesPage.jsx';
 import Students from './views/facilitator/StudentsPage.jsx';
 import Results from './views/facilitator/ResultsPage.jsx';
@@ -55,13 +54,6 @@ const ROUTES = {
     component: Elections
   },
 
-  electionPositions: {
-    label: 'Election Positions',
-    icon: ScrollText,
-    permission: 'elections.read',
-    component: ElectionPositions
-  },
-
   candidates: {
     label: 'Candidates',
     icon: UserCog,
@@ -88,7 +80,6 @@ const ROLE_ROUTES = {
   admin: [
     'dashboard',
     'elections',
-    'electionPositions',
     'candidates',
     'students',
     'results'
@@ -97,7 +88,6 @@ const ROLE_ROUTES = {
   facilitator: [
     'dashboard',
     'elections',
-    'electionPositions',
     'candidates',
     'students',
     'results'
@@ -117,7 +107,6 @@ const ROLE_ROUTES = {
 function App() {
   const [authState, setAuthState] = useState(authStore.getState());
   const [activeView, setActiveView] = useState('dashboard');
-  const [selectedElectionId, setSelectedElectionId] = useState(null);
 
   useEffect(() => {
     return authStore.subscribe(setAuthState);
@@ -154,7 +143,7 @@ function App() {
   /* NAVIGATION */
   /* ---------------------------------------------------------------------- */
 
-  function navigate(view, electionId = null) {
+  function navigate(view) {
     authStore.clearNotice();
 
     const route = ROUTES[view];
@@ -163,10 +152,6 @@ function App() {
       authStore.setNotice('Access denied');
       setActiveView('dashboard');
       return;
-    }
-
-    if (electionId) {
-      setSelectedElectionId(electionId);
     }
 
     setActiveView(view);
@@ -334,16 +319,6 @@ function App() {
               user={user}
               visibleRouteKeys={visibleRoutes}
               onNavigate={navigate}
-            />
-          ) : activeView === 'elections' ? (
-            <Elections
-              user={user}
-              onNavigateToPositions={(electionId) => navigate('electionPositions', electionId)}
-            />
-          ) : activeView === 'electionPositions' ? (
-            <ElectionPositions
-              user={user}
-              electionId={selectedElectionId}
             />
           ) : ActiveComponent ? (
             <ActiveComponent user={user} />

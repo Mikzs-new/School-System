@@ -197,7 +197,11 @@ export default function ElectionDetail({
 
     try {
       const voteItems = Object.entries(selectedVotes).map(([positionId, candidateId]) => ({
+<<<<<<< HEAD
         candidate: candidateId
+=======
+        candidate: parseInt(candidateId)
+>>>>>>> a3df293d4593471b5b23b54526cd622c30cc3e98
       }))
 
       await api.post(`/api/v1/election/elections/${election.id}/vote/`, {
@@ -209,7 +213,15 @@ export default function ElectionDetail({
       alert('Vote submitted successfully!')
     } catch (error) {
       console.error('Error submitting vote:', error)
+<<<<<<< HEAD
       alert(error.response?.data || 'Failed to submit vote')
+=======
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.non_field_errors?.[0] ||
+                          error.response?.data || 
+                          'Failed to submit vote'
+      alert(errorMessage)
+>>>>>>> a3df293d4593471b5b23b54526cd622c30cc3e98
     } finally {
       setSubmittingVote(false)
     }
@@ -230,9 +242,13 @@ export default function ElectionDetail({
 
   async function endElection() {
     try {
+<<<<<<< HEAD
       await api.patch(`/api/v1/election/elections/${election.id}/`, {
         status: 'ended'
       })
+=======
+      await api.post(`/api/v1/election/elections/${election.id}/end_election/`)
+>>>>>>> a3df293d4593471b5b23b54526cd622c30cc3e98
       alert('Election ended successfully')
       loadElectionDetails()
     } catch (error) {
@@ -241,6 +257,19 @@ export default function ElectionDetail({
     }
   }
 
+<<<<<<< HEAD
+=======
+  async function handleViewResults() {
+    try {
+      const response = await api.get(`/api/v1/election/elections/${election.id}/results/`)
+      alert(JSON.stringify(response.data, null, 2))
+    } catch (error) {
+      console.error(error)
+      alert(error?.response?.data?.detail || 'Failed to load results')
+    }
+  }
+
+>>>>>>> a3df293d4593471b5b23b54526cd622c30cc3e98
   async function handleUpdateTime(e) {
     e.preventDefault()
     
@@ -254,9 +283,29 @@ export default function ElectionDetail({
     }
     
     try {
+<<<<<<< HEAD
       await api.patch(`/api/v1/election/elections/${election.id}/update_time/`, {
         start_datetime: updateTimeForm.start_datetime,
         end_datetime: updateTimeForm.end_datetime
+=======
+      // Convert local datetime to ISO string for backend (preserving local time)
+      const formatToISO = (localDateTime) => {
+        if (!localDateTime) return null
+        const date = new Date(localDateTime)
+        // Get the date components in local timezone
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        // Return ISO string without timezone conversion
+        return `${year}-${month}-${day}T${hours}:${minutes}:00`
+      }
+      
+      await api.patch(`/api/v1/election/elections/${election.id}/update_time/`, {
+        start_datetime: formatToISO(updateTimeForm.start_datetime),
+        end_datetime: formatToISO(updateTimeForm.end_datetime)
+>>>>>>> a3df293d4593471b5b23b54526cd622c30cc3e98
       })
       alert('Election schedule updated successfully')
       setShowUpdateTimeModal(false)
@@ -270,9 +319,28 @@ export default function ElectionDetail({
 
   function openUpdateTimeModal() {
     if (details) {
+<<<<<<< HEAD
       setUpdateTimeForm({
         start_datetime: details.start_datetime || '',
         end_datetime: details.end_datetime || ''
+=======
+      // Convert UTC datetime to local datetime-local format
+      const formatToLocalDateTime = (utcString) => {
+        if (!utcString) return ''
+        const date = new Date(utcString)
+        // Format as YYYY-MM-DDTHH:MM for datetime-local input (preserving local time)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        return `${year}-${month}-${day}T${hours}:${minutes}`
+      }
+      
+      setUpdateTimeForm({
+        start_datetime: formatToLocalDateTime(details.start_datetime),
+        end_datetime: formatToLocalDateTime(details.end_datetime)
+>>>>>>> a3df293d4593471b5b23b54526cd622c30cc3e98
       })
     }
     setShowUpdateTimeModal(true)
@@ -875,7 +943,11 @@ export default function ElectionDetail({
                     Launch Election
                   </button>
                 )}
+<<<<<<< HEAD
                 {details?.status?.toUpperCase() === 'ENABLED' && (
+=======
+                {details?.status?.toUpperCase() === 'ACTIVE' && (
+>>>>>>> a3df293d4593471b5b23b54526cd622c30cc3e98
                   <button
                     className="election-action-card danger"
                     onClick={endElection}
@@ -884,6 +956,18 @@ export default function ElectionDetail({
                     End Election
                   </button>
                 )}
+<<<<<<< HEAD
+=======
+                {details?.status?.toUpperCase() === 'ENDED' && (
+                  <button
+                    className="election-action-card"
+                    onClick={handleViewResults}
+                  >
+                    <BarChart3 size={20} />
+                    View Results
+                  </button>
+                )}
+>>>>>>> a3df293d4593471b5b23b54526cd622c30cc3e98
               </div>
             )}
 

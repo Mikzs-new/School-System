@@ -1,133 +1,179 @@
-import { useState } from "react"
+import { useState } from "react";
 
-import AuthLayout from "../../components/layout/AuthLayout"
-
-import api from "../../api/apiClient"
-
-
-
-function ForgotPasswordPage() {
-  const [email, setEmail] = useState("")
-
-  const [loading, setLoading] = useState(false)
-
-  const [success, setSuccess] = useState("")
-
-  const [error, setError] = useState("")
+import {
+  Mail,
+  ArrowLeft
+} from "lucide-react";
 
 
+export default function ForgotPasswordPage({
+  onBack
+}) {
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
+  const [email, setEmail] =
+    useState("");
 
-    setLoading(true)
+  const [loading, setLoading] =
+    useState(false);
 
-    setError("")
+  const [message, setMessage] =
+    useState("");
 
-    setSuccess("")
+  const [error, setError] =
+    useState("");
 
+  async function handleSubmit(
+    event
+  ) {
 
+    event.preventDefault();
+
+    setLoading(true);
+
+    setMessage("");
+    setError("");
 
     try {
-      const response = await apiClient.post(
-        "/auth/forgot_password/",
-        {
-          email,
+
+      const response = await fetch(
+          "http://localhost:8000/api/v1/auth/forgot_password/",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              email
+            })
+          }
+        );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+
+          throw new Error(
+
+            data.detail ||
+
+            data.message ||
+
+            JSON.stringify(data)
+          );
         }
-      )
 
+        setMessage(
+          data.message ||
+          "If account exists, email was sent."
+        );
 
+      setMessage(
+        response.data.message ||
+        "If account exists, email was sent."
+      );
 
-      setSuccess(
-        response.data.message
-      )
-    }
+    }finally {
 
-
-
-    catch (error) {
-      console.error(error)
-
-      setError(
-        "Unable to process request."
-      )
-    }
-
-
-
-    finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
-
-
   return (
-    <AuthLayout>
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-2xl shadow-2xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            Forgot Password
-          </h1>
 
-          <p className="text-zinc-400 mt-2">
-            Enter your email to receive a reset link
+    <div className="forgot-wrapper">
+
+      <div className="forgot-card">
+
+        <button
+          type="button"
+          className="forgot-back-btn"
+          onClick={onBack}
+        >
+
+          <ArrowLeft size={18} />
+
+          Back to Login
+
+        </button>
+
+        <div className="forgot-header">
+
+          <div className="forgot-icon">
+
+            <Mail size={28} />
+
+          </div>
+
+          <h1>Forgot Password</h1>
+
+          <p>
+            Enter your account email to
+            receive a password reset link.
           </p>
+
         </div>
 
-
-
         <form
+          className="forgot-form"
           onSubmit={handleSubmit}
-          className="space-y-5"
         >
-          <div>
-            <label className="block text-sm text-zinc-300 mb-2">
-              Email Address
-            </label>
+
+          <div className="forgot-group">
+
+            <label>Email Address</label>
 
             <input
               type="email"
-              value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
               placeholder="Enter your email"
-              className="w-full bg-zinc-950 border border-zinc-700 text-white px-4 py-3 rounded-xl outline-none focus:border-blue-500"
+              value={email}
+              onChange={(e) =>
+                setEmail(
+                  e.target.value
+                )
+              }
+              required
             />
+
           </div>
 
+          {
+            message && (
+              <div className="success-message">
+                {message}
+              </div>
+            )
+          }
 
-
-          {success && (
-            <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-xl text-sm">
-              {success}
-            </div>
-          )}
-
-
-
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm">
-              {error}
-            </div>
-          )}
-
-
+          {
+            error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )
+          }
 
           <button
             type="submit"
+            className="forgot-submit-btn"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-3 rounded-xl font-semibold transition"
           >
-            {loading
-              ? "Sending..."
-              : "Send Reset Link"}
-          </button>
-        </form>
-      </div>
-    </AuthLayout>
-  )
-}
 
-export default ForgotPasswordPage
+            {
+              loading
+                ? "Sending..."
+                : "Send Reset Link"
+            }
+
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+  );
+}

@@ -1,305 +1,218 @@
-import { useEffect, useState } from "react"
+import { useState, useEffect } from 'react'
 
-import {
-  getElections,
-  createElection,
-} from "../../api/elections"
+import { Calendar, Clock, ChevronRight, Plus, X } from 'lucide-react'
 
+import apiClient from '../../api/apiClient'
+import { authStore } from '../../state/authStore.js'
 
+export default function ElectionsPage() {
+  const [elections, setElections] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    description: '',
+    start_datetime: '',
+    end_datetime: ''
+  })
+  const [submitting, setSubmitting] = useState(false)
+  const userRole = authStore.getRole()
+  const isStudent = userRole === 'student'
 
-function ElectionsPage({ onNavigateToPositions }) {
+  useEffect(() => {
+    loadElections()
+  }, [])
 
-
-
-  const [elections, setElections] =
-    useState([])
-
-  const [loading, setLoading] =
-    useState(true)
-
-  const [error, setError] =
-    useState("")
-
-
-
-  const [name, setName] =
-    useState("")
-
-  const [description, setDescription] =
-    useState("")
-
-  const [status, setStatus] =
-    useState("draft")
-
-
-
-  const fetchElections = async () => {
-
+  async function loadElections() {
     try {
-
       setLoading(true)
-
-      const data =
-        await getElections()
-
-      setElections(
-        data.results || data
-      )
-    }
-
-    catch (error) {
-
-      console.error(error)
-
-      setError(
-        "Failed to load elections"
-      )
-    }
-
-    finally {
-
+      const response = await apiClient.get('/api/v1/election/elections/')
+      setElections(response.data || [])
+    } catch (error) {
+      console.error('Error loading elections:', error)
+    } finally {
       setLoading(false)
     }
   }
 
-
-
-  useEffect(() => {
-
-    fetchElections()
-
-  }, [])
-
-
-
-  const handleCreateElection =
-    async (e) => {
-
-      e.preventDefault()
-
-      try {
-
-        await createElection({
-          name,
-          description,
-          status,
-        })
-
-
-
-        setName("")
-        setDescription("")
-        setStatus("draft")
-
-
-
-        fetchElections()
+  async function handleCreateElection(e) {
+    e.preventDefault()
+    setSubmitting(true)
+    try {
+      const formatToISO = (localDateTime) => {
+        if (!localDateTime) return null
+        const date = new Date(localDateTime)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        return `${year}-${month}-${day}T${hours}:${minutes}:00`
       }
-
-      catch (error) {
-
-        console.log(error)
-
-        console.log(
-          error.response
-        )
-
-        console.log(
-          error.response?.data
-        )
-
-        alert(
-          JSON.stringify(
-            error.response?.data ||
-            error.message,
-            null,
-            2
-          )
-        )
+      
+      const payload = {
+        name: createForm.name,
+        description: createForm.description || '',
+        start_datetime: formatToISO(createForm.start_datetime),
+        end_datetime: formatToISO(createForm.end_datetime)
       }
+      await apiClient.post('/api/v1/election/elections/', payload)
+      setShowCreateModal(false)
+      setCreateForm({ name: '', description: '', start_datetime: '', end_datetime: '' })
+      alert('Election created successfully!')
+      loadElections()
+    } catch (error) {
+      console.error('Error creating election:', error)
+      const errorMessage = error.message || error.response?.data?.detail || error.response?.data || 'Failed to create election'
+      alert(errorMessage)
+    } finally {
+      setSubmitting(false)
     }
+  }
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'ACTIVE': return 'status-enabled'
+      case 'SCHEDULED': return 'status-scheduled'
+      case 'DRAFTED': return 'status-drafted'
+      case 'ENDED': return 'status-ended'
+      default: return 'status-drafted'
+    }
+  }
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A'
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  }
 
   return (
-
-    <div className="space-y-8 pb-20">
-
-      <div>
-
-        <h1 className="text-3xl font-bold text-white">
-          Elections
-        </h1>
-
-        <p className="text-zinc-400 mt-1">
-          Manage elections
-        </p>
-
+    <div className="page-stack">
+      <div className="page-header">
+        <div>
+          <h1>Elections</h1>
+          <p>View and participate in upcoming elections</p>
+        </div>
+        {!isStudent && (
+          <button
+            className="create-election-btn"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <Plus size={18} />
+            Create Election
+          </button>
+        )}
       </div>
 
-
-
-      <form
-        onSubmit={handleCreateElection}
-        className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4 max-w-2xl"
-      >
-
-        <h2 className="text-2xl font-semibold text-white">
-          Create Election
-        </h2>
-
-
-
-        <div>
-
-          <label className="block text-sm text-zinc-400 mb-2">
-            Election Name
-          </label>
-
-          <input
-            type="text"
-            value={name}
-            onChange={(e) =>
-              setName(e.target.value)
-            }
-            className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white outline-none"
-            required
-          />
-
-        </div>
-
-
-
-        <div>
-
-          <label className="block text-sm text-zinc-400 mb-2">
-            Description
-          </label>
-
-          <textarea
-            value={description}
-            onChange={(e) =>
-              setDescription(e.target.value)
-            }
-            className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white outline-none"
-            rows={5}
-          />
-
-        </div>
-
-
-
-        <div>
-
-          <label className="block text-sm text-zinc-400 mb-2">
-            Status
-          </label>
-
-          <select
-            value={status}
-            onChange={(e) =>
-              setStatus(e.target.value)
-            }
-            className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white outline-none"
-          >
-
-            <option value="draft">
-              Draft
-            </option>
-
-            <option value="active">
-              Active
-            </option>
-
-            <option value="closed">
-              Closed
-            </option>
-
-          </select>
-
-        </div>
-
-
-
-        <button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition"
-        >
-          Create Election
-        </button>
-
-      </form>
-
-
-
       {loading ? (
-
-        <div className="text-zinc-400">
-          Loading elections...
-        </div>
-
-      ) : error ? (
-
-        <div className="text-red-400">
-          {error}
-        </div>
-
+        <div className="empty-state">Loading elections...</div>
       ) : elections.length === 0 ? (
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-zinc-400">
-          No elections found
-        </div>
-
+        <div className="empty-state">No elections available</div>
       ) : (
-
-        <div className="grid gap-4">
-
+        <div className="election-dashboard-grid">
           {elections.map((election) => (
-
             <div
               key={election.id}
-              className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex items-center justify-between"
+              className="election-card"
             >
-
-              <div>
-
-                <h2 className="text-xl font-semibold text-white">
-                  {election.name}
-                </h2>
-
-                <p className="text-zinc-400 mt-1">
-                  {election.description}
-                </p>
-
-                <p className="text-zinc-500 mt-2 text-sm">
-                  Status:
-                  {" "}
+              <div className="election-card-header">
+                <div className={`election-status ${getStatusColor(election.status)}`}>
                   {election.status}
-                </p>
-
+                </div>
+                <ChevronRight size={20} className="election-card-chevron" />
               </div>
-
-
-
-              <button
-                onClick={() =>
-                  onNavigateToPositions(election.id)
-                }
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl transition"
-              >
-                Manage Positions
-              </button>
-
+              
+              <h3 className="election-card-title">{election.name}</h3>
+              
+              {election.description && (
+                <p className="election-card-description">{election.description}</p>
+              )}
+              
+              <div className="election-card-meta">
+                <div className="election-meta-item">
+                  <Calendar size={16} />
+                  <span>Start: {formatDate(election.start_datetime)}</span>
+                </div>
+                <div className="election-meta-item">
+                  <Clock size={16} />
+                  <span>End: {formatDate(election.end_datetime)}</span>
+                </div>
+              </div>
+              
+              <div className="election-card-footer">
+                <span className="election-card-action">View Election</span>
+              </div>
             </div>
           ))}
-
         </div>
       )}
 
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Create Election</h3>
+              <button onClick={() => setShowCreateModal(false)} aria-label="Close modal">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateElection}>
+              <div className="form-group">
+                <label>Election Name *</label>
+                <input
+                  type="text"
+                  value={createForm.name}
+                  onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                  placeholder="Enter election name"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+                  placeholder="Enter election description (optional)"
+                  rows={3}
+                />
+              </div>
+              <div className="form-group">
+                <label>Start Date & Time *</label>
+                <input
+                  type="datetime-local"
+                  value={createForm.start_datetime}
+                  onChange={(e) => setCreateForm({ ...createForm, start_datetime: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>End Date & Time *</label>
+                <input
+                  type="datetime-local"
+                  value={createForm.end_datetime}
+                  onChange={(e) => setCreateForm({ ...createForm, end_datetime: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" onClick={() => setShowCreateModal(false)}>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="workspace-primary-btn"
+                  disabled={submitting}
+                >
+                  {submitting ? 'Creating...' : 'Create Election'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
-
-
-
-export default ElectionsPage
