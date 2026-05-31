@@ -101,6 +101,8 @@ class SchoolYearViewSet(viewsets.GenericViewSet,
     def get_queryset(self):
         user = self.request.user
 
+        if user.is_staff:
+            return SchoolYear.objects.all()
         if hasattr(user, 'school_staff_profile'):
             return SchoolYear.objects.filter(school=user.school_staff_user.school)
         

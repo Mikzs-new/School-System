@@ -1,295 +1,154 @@
 import React, { useEffect, useState } from 'react';
-import {
-  CheckCircle2,
-  GraduationCap
-} from 'lucide-react';
+import { CheckCircle2, Eye, RefreshCw, UsersRound } from 'lucide-react';
+import { getCandidates, submitVote } from '../api/voting.js';
+import { hasPermission } from '../state/permissionGuard.js';
 
-import api from '../api/apiClient';
+function getCandidateName(candidate) {
+  return candidate.name || candidate.full_name || candidate.candidate_name || `Candidate ${candidate.id}`;
+}
 
-export default function Voting() {
+function getCandidateDetail(candidate) {
+  return candidate.position || candidate.party || candidate.description || 'Candidate';
+}
 
+export default function Voting({ user }) {
+  const canUseAdminTools = hasPermission(user, 'candidates.update') || hasPermission(user, 'votes.read');
+  const canCastVote = hasPermission(user, 'vote.cast');
   const [candidates, setCandidates] = useState([]);
+  const [selectedCandidateId, setSelectedCandidateId] = useState('');
   const [studentId, setStudentId] = useState('');
-  const [selectedCandidate, setSelectedCandidate] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState({ type: 'idle', message: '' });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchCandidates();
-  }, []);
+  const loadCandidates = async () => {
+    setIsLoading(true);
+    setStatus({ type: 'idle', message: '' });
 
-  const fetchCandidates = async () => {
     try {
-
-      setLoading(true);
-
-      const response = await api.get(
-        '/api/v1/election/candidates/'
-      );
-
-      setCandidates(response.data || []);
-
+      const data = await getCandidates();
+      setCandidates(data);
+      if (!data.length) {
+        setStatus({ type: 'info', message: 'No candidates were returned by the API.' });
+      }
     } catch (error) {
-
-      console.error(error);
-      setMessage('Failed to load candidates');
-
+      setStatus({ type: 'error', message: error.message });
     } finally {
-
-      setLoading(false);
-
+      setIsLoading(false);
     }
   };
 
-  const handleVote = async (e) => {
+  useEffect(() => {
+    loadCandidates();
+  }, []);
 
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!canCastVote) {
+      setStatus({ type: 'error', message: 'Access Denied' });
+      return;
+    }
+
+    const selectedCandidate = candidates.find((candidate) => String(candidate.id || candidate.pk) === String(selectedCandidateId));
+
+    if (!studentId.trim()) {
+      setStatus({ type: 'error', message: 'Enter the student record ID before submitting your vote.' });
+      return;
+    }
+
+    if (!selectedCandidate) {
+      setStatus({ type: 'error', message: 'Choose a candidate before submitting your vote.' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatus({ type: 'idle', message: '' });
 
     try {
-
-      setSubmitting(true);
-      setMessage('');
-
-      const candidate = candidates.find(
-        (c) => String(c.id) === String(selectedCandidate)
-      );
-
-      if (!candidate) {
-
-        setMessage('Select a candidate');
-        return;
-
-      }
-
-      const enrollmentsResponse = await api.get(
-        '/api/v1/student/enroll/'
-      );
-
-      const enrollments = enrollmentsResponse.data || [];
-
-      console.log('ENROLLMENTS:', enrollments);
-
-      let enrollment = null;
-
-      enrollment = enrollments.find(
-        (e) =>
-          String(e.student?.school_student_id) ===
-          String(studentId)
-      );
-
-      if (!enrollment) {
-
-        enrollment = enrollments.find(
-          (e) =>
-            String(e.school_student_id) ===
-            String(studentId)
-        );
-
-      }
-
-      if (!enrollment) {
-
-        enrollment = enrollments.find(
-          (e) =>
-            String(e.student_id) ===
-            String(studentId)
-        );
-
-      }
-
-      if (!enrollment) {
-
-        setMessage('Student enrollment not found');
-        return;
-
-      }
-
-      const payload = {
-
-        candidate: candidate.id,
-
-        student_enrollment: enrollment.id,
-
-        election:
-          candidate.election?.id ||
-          candidate.election
-
-      };
-
-      console.log('VOTE PAYLOAD:', payload);
-
-      const response = await api.post(
-        '/api/v1/election/vote/',
-        payload
-      );
-
-      console.log(response.data);
-
-      setMessage('Vote submitted successfully');
-
-      setStudentId('');
-      setSelectedCandidate('');
-
+      await submitVote({ student: studentId.trim(), election: selectedCandidate.election });
+      setStatus({ type: 'success', message: 'Your vote was submitted successfully.' });
     } catch (error) {
-
-      console.error(error);
-
-      console.log(
-        'RESPONSE:',
-        error.response
-      );
-
-      console.log(
-        'DATA:',
-        error.response?.data
-      );
-
-      setMessage(
-        error.response?.data?.detail ||
-        JSON.stringify(error.response?.data) ||
-        'Failed to submit vote'
-      );
-
+      setStatus({ type: 'error', message: error.message });
     } finally {
-
-      setSubmitting(false);
-
+      setIsSubmitting(false);
     }
   };
 
   return (
-
-    <div className="page-container">
-
-      <div className="page-header">
-
+    <section className="page-stack" aria-labelledby="voting-title">
+      <header className="page-header">
         <div>
-
-          <div className="page-eyebrow">
-            ACADEMIC VOTING SYSTEM
-          </div>
-
-          <h1>Voting</h1>
-
+          <span className="eyebrow">Voting</span>
+          <h1 id="voting-title">Candidate ballot</h1>
         </div>
+        <button className="secondary-button" disabled={isLoading} type="button" onClick={loadCandidates}>
+          <RefreshCw size={17} />
+          <span>Refresh</span>
+        </button>
+      </header>
 
-      </div>
+      <form className="ballot" onSubmit={handleSubmit}>
+        {canUseAdminTools ? (
+          <div className="privileged-actions" aria-label="Privileged voting tools">
+            <button className="secondary-button" type="button">
+              <UsersRound size={17} />
+              <span>Manage candidates</span>
+            </button>
+            <button className="secondary-button" type="button">
+              <Eye size={17} />
+              <span>View all votes</span>
+            </button>
+          </div>
+        ) : null}
 
-      <form
-        className="config-card"
-        onSubmit={handleVote}
-      >
-
-        <div className="field-group">
-
-          <label>Student ID</label>
-
+        <label className="field-row">
+          <span>Student record ID</span>
           <input
+            inputMode="numeric"
+            onChange={(event) => setStudentId(event.target.value)}
+            placeholder="Example: 1"
+            required
             type="text"
             value={studentId}
-            onChange={(e) =>
-              setStudentId(e.target.value)
-            }
-            placeholder="Enter Student ID"
-            required
           />
+        </label>
 
-        </div>
+        {isLoading ? <div className="empty-state">Loading candidates...</div> : null}
 
-        <div className="field-group">
-
-          <label>Select Candidate</label>
-
+        {!isLoading && candidates.length > 0 ? (
           <div className="candidate-list">
+            {candidates.map((candidate) => {
+              const id = candidate.id || candidate.pk || candidate.candidate_id;
+              const isSelected = String(selectedCandidateId) === String(id);
 
-            {loading ? (
-
-              <p>Loading candidates...</p>
-
-            ) : (
-
-              candidates.map((candidate) => (
-
-                <label
-                  key={candidate.id}
-                  className={
-                    String(selectedCandidate) === String(candidate.id)
-                      ? 'candidate-card selected'
-                      : 'candidate-card'
-                  }
-                >
-
+              return (
+                <label className={isSelected ? 'candidate-row selected' : 'candidate-row'} key={id}>
                   <input
+                    checked={isSelected}
+                    name="candidate"
+                    onChange={() => setSelectedCandidateId(id)}
                     type="radio"
-                    value={candidate.id}
-                    checked={
-                      String(selectedCandidate) ===
-                      String(candidate.id)
-                    }
-                    onChange={() =>
-                      setSelectedCandidate(candidate.id)
-                    }
+                    value={id}
                   />
-
-                  <div>
-
-                    <strong>
-
-                      {
-                        candidate.student_enrollment?.student ||
-                        'Unknown Candidate'
-                      }
-
-                    </strong>
-
-                    <p>
-
-                      {
-                        candidate.position?.title ||
-                        'Position'
-                      }
-
-                    </p>
-
-                  </div>
-
+                  <span className="radio-mark" />
+                  <span className="candidate-copy">
+                    <strong>{getCandidateName(candidate)}</strong>
+                    <small>{getCandidateDetail(candidate)}</small>
+                  </span>
                 </label>
-
-              ))
-            )}
-
+              );
+            })}
           </div>
+        ) : null}
 
-        </div>
+        {status.message ? <div className={`status-banner ${status.type}`}>{status.message}</div> : null}
 
-        {message && (
-
-          <div className="status-banner">
-            {message}
-          </div>
-
-        )}
-
-        <button
-          type="submit"
-          className="primary-button"
-          disabled={submitting}
-        >
-
+        <button className="primary-button submit-vote" disabled={isSubmitting || isLoading} type="submit">
           <CheckCircle2 size={18} />
-
-          {
-            submitting
-              ? 'Submitting Vote...'
-              : 'Submit Vote'
-          }
-
+          <span>{isSubmitting ? 'Submitting...' : 'Submit vote'}</span>
         </button>
-
       </form>
-
-    </div>
-
+    </section>
   );
 }

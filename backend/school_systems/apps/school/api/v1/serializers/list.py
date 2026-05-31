@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.school.models import School, Course, Department, SchoolYear
 
-from .nested import SmallDepartmentSerializer, SmallSchoolSerializer
+from .nested import SmallSchoolSerializer
 
 class SchoolListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,7 +21,10 @@ class DepartmentListSerializer(serializers.ModelSerializer):
         fields = ['id','name','school']
 
 class CourseListSerializer(serializers.ModelSerializer):
-    department = SmallDepartmentSerializer(read_only=True)
+    department = serializers.CharField(
+        source='department.name',
+        read_only=True
+    )
     class Meta:
         model = Course
         fields = ['id','name','department','school']

@@ -59,9 +59,8 @@ export const ROLE_PERMISSIONS = {
 
     'partylists.read',
 
-    'elections.read',
+    'elections.read'
 
-    'vote.cast'
   ]
 };
 
@@ -93,6 +92,20 @@ export const MODULES = {
     endpoint: '/api/v1/election/partylists/',
     permissionModule: 'partylists',
     primaryPermission: 'partylists.read'
+  },
+
+  candidates: {
+    label: 'Candidates',
+    endpoint: '/api/v1/election/candidates/',
+    permissionModule: 'candidates',
+    primaryPermission: 'candidates.read'
+  },
+
+  votes: {
+    label: 'Votes',
+    endpoint: '/api/v1/election/votes/',
+    permissionModule: 'votes',
+    primaryPermission: 'votes.read'
   },
 
   courses: {

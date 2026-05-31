@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from shared.permissions.user_permissions import CanManageModel, CanManageImport
 
@@ -126,7 +127,16 @@ class StudentEnrollmentViewset(viewsets.ModelViewSet):
 
 class BulkStudentCSVViewset(viewsets.GenericViewSet, mixins.CreateModelMixin):
     permission_classes = [IsAuthenticated,CanManageImport]
-    
+    parser_classes = [
+        MultiPartParser,
+        FormParser,
+    ]
     def create(self, request):
-        result = StudentImportService.import_students_csv(file=request.FILES['file'],school_staff_profile=request.user.school_staff_profile)
-        return Response(result,status=status.HTTP_200_OK)
+        file = request.FILES.get('file')
+        if not file:
+            return Response(
+                {'detail': 'CSV file is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        result = StudentImportService.import_students_csv(file=file, school_staff_profile=request.user.school_staff_profile)
+        return Response(result, status=status.HTTP_200_OK)

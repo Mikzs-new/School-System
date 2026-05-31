@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 MAX_CSV_SIZE = 2 * 1024 * 1024
 
-REQUIRED_COLUMNS = ['student_id','first_name','last_name','course','year_level','email']
+REQUIRED_COLUMNS = ['school_student_id','first_name','last_name','course','year_level','email']
 
 DANGEROUS_PREFIXES = ['=','+','-','@']
 
