@@ -127,6 +127,10 @@ apiClient.interceptors.response.use(
       );
     }
 
+    console.log("API Error Response:", err.response.data);
+    console.log("API Error Status:", err.response.status);
+    console.log("API Error Config:", err.config);
+
     return Promise.reject(new Error(formatError(err.response.data)));
   }
 );

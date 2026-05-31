@@ -121,6 +121,14 @@ class ElectionService:
     @staticmethod
     @transaction.atomic
     def generate_snapshot(school_staff_profile,election):
+        # Check if snapshot already exists (idempotency)
+        try:
+            existing_snapshot = ElectionAnalyticsSnapshot.objects.get(election=election)
+            print(f"Snapshot already exists for election {election.id}, returning existing snapshot")
+            return existing_snapshot
+        except ElectionAnalyticsSnapshot.DoesNotExist:
+            print(f"No existing snapshot for election {election.id}, creating new snapshot")
+        
         election.status = ElectionStatus.ENDED
         election.save()
         school_year = election.school_year

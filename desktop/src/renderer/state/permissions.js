@@ -46,7 +46,11 @@ export const ROLE_PERMISSIONS = {
 
     'facilitators.read',
 
-    'votes.read'
+    'votes.read',
+
+    'school_year.read',
+    'school_year.create',
+    'school_year.update'
 
 
   ],
@@ -120,5 +124,12 @@ export const MODULES = {
     endpoint: '/api/v1/departments/',
     permissionModule: 'departments',
     primaryPermission: 'departments.read'
+  },
+
+  school_year: {
+    label: 'School Year',
+    endpoint: '/api/v1/school/school_year/',
+    permissionModule: 'school_year',
+    primaryPermission: 'school_year.read'
   }
 };

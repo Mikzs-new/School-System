@@ -9,6 +9,7 @@ import {
   BookOpen,
   Building2,
   BarChart3,
+  Calendar,
   GraduationCap,
   LayoutDashboard,
   ListChecks,
@@ -29,6 +30,7 @@ import Facilitators from './views/Facilitators.jsx';
 import Departments from './views/Departments.jsx';
 import Courses from './views/Courses.jsx';
 import Schools from './views/Schools.jsx';
+import SchoolYear from './views/SchoolYear.jsx';
 
 import { authStore } from './state/authStore.js';
 import { hasPermission } from './state/permissionGuard.js';
@@ -56,6 +58,13 @@ const ROUTES = {
     icon: School,
     permission: 'schools.read',
     component: Schools
+  },
+
+  school_year: {
+    label: 'School Year',
+    icon: Calendar,
+    permission: 'school_year.read',
+    component: SchoolYear
   },
 
   departments: {
@@ -123,6 +132,7 @@ const ROLE_ROUTES = {
 
   facilitator: [
     'dashboard',
+    'school_year',
     'departments',
     'courses',
     'students',

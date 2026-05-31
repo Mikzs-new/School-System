@@ -162,7 +162,16 @@ class ElectionViewSet(viewsets.ModelViewSet):
             raise ValidationError('Election has not started yet')
     
         if election.status == ElectionStatus.ENDED:
-            raise ValidationError("Election already ended")
+            # If already ended, return existing snapshot instead of error
+            try:
+                existing_snapshot = ElectionAnalyticsSnapshot.objects.get(election=election)
+                serializer = ElectionResultSerializer(existing_snapshot)
+                return Response({
+                    "message": "Election already ended, returning existing results",
+                    "results": serializer.data
+                }, status=status.HTTP_200_OK)
+            except ElectionAnalyticsSnapshot.DoesNotExist:
+                raise ValidationError("Election already ended but no snapshot found")
 
         user = request.user
 
@@ -170,8 +179,13 @@ class ElectionViewSet(viewsets.ModelViewSet):
             raise ValidationError('User has no permission')
 
         election_snapshot = ElectionService.generate_snapshot(school_staff_profile=user.school_staff_profile,election=election)
+        serializer = ElectionResultSerializer(election_snapshot)
 
-        return Response({"message": "Election ended and records saved successfully", "id": election_snapshot.id}, status=status.HTTP_200_OK)
+        return Response({
+            "message": "Election ended and records saved successfully",
+            "id": election_snapshot.id,
+            "results": serializer.data
+        }, status=status.HTTP_200_OK)
     
     @action(detail=True, methods=['post'])
     def start_election(self, request, pk=None):
@@ -198,12 +212,17 @@ class ElectionViewSet(viewsets.ModelViewSet):
         if election.status != ElectionStatus.ENDED:
             raise ValidationError('Election results are not available yet')
         
-        try:
-            snapshot = ElectionAnalyticsSnapshot.objects.get(election=election)
-            serializer = ElectionResultSerializer(snapshot)
-            return Response(serializer.data)
-        except ElectionAnalyticsSnapshot.DoesNotExist:
-            raise ValidationError('Election results have not been generated yet')
+        snapshot = ElectionAnalyticsSnapshot.objects.filter(
+            election=election
+        ).first()
+
+        if not snapshot:
+            raise ValidationError(
+                'Election analytics snapshot does not exist.'
+            )
+        
+        serializer = ElectionResultSerializer(snapshot)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def students(self, request, pk=None):
@@ -216,6 +235,11 @@ class ElectionViewSet(viewsets.ModelViewSet):
         year_levels = ElectionEligibleYearLevel.objects.filter(election=election).values_list('year_level', flat=True)
         courses = ElectionEligibleCourse.objects.filter(election=election).values_list('course', flat=True)
 
+        print(f"Students Endpoint - Election ID: {election.id}")
+        print(f"Students Endpoint - School Year: {election.school_year}")
+        print(f"Students Endpoint - Eligible Year Levels: {list(year_levels)}")
+        print(f"Students Endpoint - Eligible Courses: {list(courses)}")
+
         students = StudentEnrollment.objects.select_related(
             'student',
             'course'
@@ -224,6 +248,8 @@ class ElectionViewSet(viewsets.ModelViewSet):
             year_level__in=year_levels,
             course__in=courses
         )
+
+        print(f"Students Endpoint - Students Count: {students.count()}")
 
         serializer = EligibleStudentsListSerializer(students,many=True)
 
@@ -508,6 +534,10 @@ class VoteViewSet(viewsets.GenericViewSet,
             raise ValidationError('Only students can vote')
         
         election = self.get_election()
+        
+        print(f"Vote Endpoint - Election ID: {election.id}")
+        print(f"Vote Endpoint - Election Status: {election.status}")
+        print(f"Vote Endpoint - Election is_active: {election.is_active}")
 
         vote = VoteService.cast_vote(
             student_profile=request.user.student_profile, 

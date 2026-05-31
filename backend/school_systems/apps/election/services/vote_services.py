@@ -16,6 +16,9 @@ class VoteService:
     @transaction.atomic
     def cast_vote(*,student_profile,election,vote_items):
 
+        print(f"Election Status: {election.status}")
+        print(f"Election is_active: {election.is_active}")
+        
         if not election.is_active:
             raise ValidationError('Election is not active')
         

@@ -25,7 +25,13 @@ export default function ElectionDetail({
   onBack
 }) {
   const userRole = authStore.getRole()
+  const currentUser = authStore.getState().user
   const isStudent = userRole === 'student'
+  
+  // Global debugging
+  console.log('Current User:', currentUser)
+  console.log('Current Role:', userRole)
+  console.log('Is Student:', isStudent)
   const [showCourseModal, setShowCourseModal] = useState(false)
   const [showYearModal, setShowYearModal] = useState(false)
   const [showPositionModal, setShowPositionModal] = useState(false)
@@ -83,91 +89,152 @@ export default function ElectionDetail({
 
   async function loadElectionDetails() {
     try {
-      const response = await api.get(`/api/v1/election/elections/${election.id}/`)
+      const url = `/api/v1/election/elections/${election.id}/`
+      console.log('Request:', url)
+      const response = await api.get(url)
+      console.log('Election Detail Response:', response.data)
+      console.log('Election Status:', response.data.status)
+      console.log('User Role:', currentUser?.role)
       setDetails(response.data)
     } catch (error) {
-      console.error('Error loading election details:', error)
+      console.error('API Error:', error.response?.data)
     }
   }
 
   async function loadCourses() {
     try {
-      const response = await api.get(`/api/v1/election/elections/${election.id}/courses/`)
+      const url = `/api/v1/election/elections/${election.id}/courses/`
+      console.log('Request:', url)
+      const response = await api.get(url)
+      console.log('Response:', response.data)
       setCourses(response.data || [])
     } catch (error) {
-      console.error('Error loading courses:', error)
+      console.error('API Error:', error.response?.data)
     }
   }
 
   async function loadYearLevels() {
     try {
-      const response = await api.get(`/api/v1/election/elections/${election.id}/year_levels/`)
+      const url = `/api/v1/election/elections/${election.id}/year_levels/`
+      console.log('Request:', url)
+      const response = await api.get(url)
+      console.log('Response:', response.data)
       setYearLevels(response.data || [])
     } catch (error) {
-      console.error('Error loading year levels:', error)
+      console.error('API Error:', error.response?.data)
     }
   }
 
   async function loadPositions() {
     try {
-      const response = await api.get(`/api/v1/election/elections/${election.id}/positions/`)
+      const url = `/api/v1/election/elections/${election.id}/positions/`
+      console.log('Request:', url)
+      const response = await api.get(url)
+      console.log('Response:', response.data)
       setPositions(response.data || [])
     } catch (error) {
-      console.error('Error loading positions:', error)
+      console.error('API Error:', error.response?.data)
     }
   }
 
   async function loadPartylists() {
     try {
-      const response = await api.get(`/api/v1/election/elections/${election.id}/partylists/`)
+      const url = `/api/v1/election/elections/${election.id}/partylists/`
+      console.log('Request:', url)
+      const response = await api.get(url)
+      console.log('Response:', response.data)
       setPartylists(response.data || [])
     } catch (error) {
-      console.error('Error loading partylists:', error)
+      console.error('API Error:', error.response?.data)
     }
   }
 
   async function loadCandidates() {
     try {
-      const response = await api.get(`/api/v1/election/elections/${election.id}/candidates/`)
+      const url = `/api/v1/election/elections/${election.id}/candidates/`
+      console.log('Request:', url)
+      const response = await api.get(url)
+      console.log('Response:', response.data)
       setCandidates(response.data || [])
     } catch (error) {
-      console.error('Error loading candidates:', error)
+      console.error('API Error:', error.response?.data)
     }
   }
 
   async function loadEligibleStudents() {
     if (isStudent) return
     try {
-      const response = await api.get(`/api/v1/election/elections/${election.id}/students/`)
+      const url = `/api/v1/election/elections/${election.id}/students/`
+      console.log('Load Eligible Students - Request:', url)
+      const response = await api.get(url)
+      console.log('Load Eligible Students - Response:', response.data)
+      console.log('Load Eligible Students - Count:', response.data?.length || 0)
       setEligibleStudents(response.data || [])
     } catch (error) {
-      console.error('Error loading eligible students:', error)
+      console.error('Load Eligible Students - API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   async function loadVotes() {
     if (isStudent) return
     try {
-      const response = await api.get(`/api/v1/election/elections/${election.id}/vote/`)
+      const url = `/api/v1/election/elections/${election.id}/vote/`
+      console.log('Request:', url)
+      const response = await api.get(url)
+      console.log('Response:', response.data)
       setVotes(response.data || [])
     } catch (error) {
-      console.error('Error loading votes:', error)
+      console.error('API Error:', error.response?.data)
     }
   }
 
   async function loadDropdownData() {
     if (isStudent) return
     try {
-      const [coursesRes, partylistsRes, enrollmentsRes] = await Promise.all([
-        api.get('/api/v1/school/courses/'),
-        api.get('/api/v1/election/partylists/'),
-        api.get('/api/v1/student/enrollment/')
+      const coursesUrl = '/api/v1/school/courses/'
+      const partylistsUrl = '/api/v1/election/partylists/'
+      const studentsUrl = `/api/v1/election/elections/${election.id}/students/`
+      
+      console.log('Request:', coursesUrl)
+      console.log('Request:', partylistsUrl)
+      console.log('Request:', studentsUrl)
+      
+      const [coursesRes, partylistsRes, studentsRes] = await Promise.all([
+        api.get(coursesUrl),
+        api.get(partylistsUrl),
+        api.get(studentsUrl)
       ])
+      
+      console.log('Response:', coursesRes.data)
+      console.log('Response:', partylistsRes.data)
+      console.log('Response:', studentsRes.data)
+      
       setAvailableCourses(coursesRes.data || [])
       setAvailablePartylists(partylistsRes.data || [])
-      setStudentEnrollments(enrollmentsRes.data || [])
+      
+      // Check if students data is valid
+      if (studentsRes.data && Array.isArray(studentsRes.data)) {
+        setStudentEnrollments(studentsRes.data)
+        console.log('Students loaded:', studentsRes.data.length)
+      } else {
+        console.warn('Students endpoint returned invalid data:', studentsRes.data)
+        // Fallback to enrollment endpoint if students endpoint fails
+        try {
+          console.log('Falling back to enrollment endpoint')
+          const enrollmentsUrl = '/api/v1/student/enrollment/'
+          console.log('Request:', enrollmentsUrl)
+          const enrollmentsRes = await api.get(enrollmentsUrl)
+          console.log('Response:', enrollmentsRes.data)
+          setStudentEnrollments(enrollmentsRes.data || [])
+        } catch (fallbackError) {
+          console.error('Fallback also failed:', fallbackError.response?.data)
+          setStudentEnrollments([])
+        }
+      }
     } catch (error) {
-      console.error('Error loading dropdown data:', error)
+      console.error('API Error:', error.response?.data)
+      alert('Failed to load dropdown data: ' + JSON.stringify(error.response?.data, null, 2))
     }
   }
 
@@ -179,10 +246,13 @@ export default function ElectionDetail({
 
   const loadVotingBallot = async () => {
     try {
-      const response = await api.get(`/api/v1/election/elections/${election.id}/vote/`)
+      const url = `/api/v1/election/elections/${election.id}/vote/`
+      console.log('GET Vote Ballot Request:', url)
+      const response = await api.get(url)
+      console.log('GET Vote Ballot Response:', response.data)
       setVotingBallot(response.data || [])
     } catch (error) {
-      console.error('Error loading voting ballot:', error)
+      console.error('API Error:', error.response?.data)
     }
   }
 
@@ -192,28 +262,63 @@ export default function ElectionDetail({
   }
 
   const handleVoteSubmit = async (e) => {
+    console.log("Starting vote submit")
     e.preventDefault()
     setSubmittingVote(true)
-
+    
+    console.log("Election object:", election)
+    const electionId = election.id
+    console.log("Voting Election ID:", electionId)
+    console.log("Displayed Election ID:", election.id)
+    
+    const url = `/api/v1/election/elections/${electionId}/vote/`
+    console.log("POST URL:", url)
+    
+    console.log("Selected Votes:", selectedVotes)
+    console.log("Selected Votes type:", typeof selectedVotes)
+    console.log("Selected Votes keys:", Object.keys(selectedVotes))
+    
     try {
+      console.log("Building vote items...")
+      // Build vote_items array based on backend serializer expectations
+      // Each vote item should include both position and candidate
       const voteItems = Object.entries(selectedVotes).map(([positionId, candidateId]) => ({
+        position: parseInt(positionId),
         candidate: parseInt(candidateId)
       }))
+      
+      console.log("Vote items built:", voteItems)
 
-      await api.post(`/api/v1/election/elections/${election.id}/vote/`, {
+      const payload = {
         vote_items: voteItems
-      })
+      }
+      
+      console.log("Payload:", payload)
+      console.log("Payload.vote_items:", payload.vote_items)
+      console.log("Vote Payload:", JSON.stringify(payload, null, 2))
+      console.log("Final Payload Structure:", payload)
+      
+      console.log("About to make POST request...")
+      console.log("API object:", api)
+      console.log("API.post function:", api.post)
+
+      const response = await api.post(url, payload)
+      console.log("POST Vote Response:", response.data)
 
       setShowVotingModal(false)
       setSelectedVotes({})
       alert('Vote submitted successfully!')
     } catch (error) {
-      console.error('Error submitting vote:', error)
-      const errorMessage = error.response?.data?.detail || 
-                          error.response?.data?.non_field_errors?.[0] ||
-                          error.response?.data || 
-                          'Failed to submit vote'
-      alert(errorMessage)
+      console.error("FULL ERROR OBJECT:", error)
+      console.error("STACK:", error?.stack)
+      console.error("MESSAGE:", error?.message)
+      console.error("RESPONSE:", error?.response)
+      console.error("DATA:", error?.response?.data)
+      
+      alert(
+        error?.message ||
+        JSON.stringify(error, null, 2)
+      )
     } finally {
       setSubmittingVote(false)
     }
@@ -223,33 +328,70 @@ export default function ElectionDetail({
     if (!confirm('Are you sure you want to launch this election?')) return
 
     try {
-      await api.post(`/api/v1/election/elections/${election.id}/start_election/`)
+      const url = `/api/v1/election/elections/${election.id}/start_election/`
+      console.log('Request:', url)
+      const response = await api.post(url)
+      console.log('Response:', response.data)
       alert('Election launched successfully!')
       loadElectionDetails()
     } catch (error) {
-      console.error('Error launching election:', error)
-      alert(error.response?.data || 'Failed to launch election')
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   async function endElection() {
+    if (!confirm('Are you sure you want to end this election?')) return
+    
     try {
-      await api.post(`/api/v1/election/elections/${election.id}/end_election/`)
-      alert('Election ended successfully')
+      const url = `/api/v1/election/elections/${election.id}/end_election/`
+      console.log('End Election Request:', url)
+      const response = await api.post(url)
+      console.log('End Election Response:', response)
+      console.log('End Election Data:', response?.data)
+      
+      const message =
+        response?.data?.message ||
+        response?.data?.detail ||
+        "Election ended successfully";
+      
+      alert(message)
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      alert(error?.response?.data?.detail || 'Failed to end election')
+      console.error('End Election API Error:', error.response?.data)
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.detail ||
+        JSON.stringify(error.response?.data, null, 2);
+      alert(errorMessage)
     }
   }
 
+  const [showResultsModal, setShowResultsModal] = useState(false)
+  const [resultsData, setResultsData] = useState(null)
+
   async function handleViewResults() {
     try {
-      const response = await api.get(`/api/v1/election/elections/${election.id}/results/`)
-      alert(JSON.stringify(response.data, null, 2))
+      const url = `/api/v1/election/elections/${election.id}/results/`
+      console.log('View Results Request:', url)
+      const response = await api.get(url)
+      console.log('View Results Response:', response)
+      console.log('View Results Data:', response?.data)
+      
+      if (!response?.data) {
+        alert('No results data received')
+        return
+      }
+      
+      setResultsData(response.data)
+      setShowResultsModal(true)
     } catch (error) {
-      console.error(error)
-      alert(error?.response?.data?.detail || 'Failed to load results')
+      console.error('View Results API Error:', error.response?.data)
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.detail ||
+        JSON.stringify(error.response?.data, null, 2);
+      alert(errorMessage)
     }
   }
 
@@ -266,31 +408,27 @@ export default function ElectionDetail({
     }
     
     try {
-      // Convert local datetime to ISO string for backend (preserving local time)
+      // Convert local datetime to ISO string for backend (with UTC timezone)
       const formatToISO = (localDateTime) => {
         if (!localDateTime) return null
         const date = new Date(localDateTime)
-        // Get the date components in local timezone
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        const hours = String(date.getHours()).padStart(2, '0')
-        const minutes = String(date.getMinutes()).padStart(2, '0')
-        // Return ISO string without timezone conversion
-        return `${year}-${month}-${day}T${hours}:${minutes}:00`
+        // Return ISO string with 'Z' suffix to indicate UTC
+        return date.toISOString()
       }
       
-      await api.patch(`/api/v1/election/elections/${election.id}/update_time/`, {
+      const url = `/api/v1/election/elections/${election.id}/update_time/`
+      console.log('Request:', url)
+      const response = await api.patch(url, {
         start_datetime: formatToISO(updateTimeForm.start_datetime),
         end_datetime: formatToISO(updateTimeForm.end_datetime)
       })
+      console.log('Response:', response.data)
       alert('Election schedule updated successfully')
       setShowUpdateTimeModal(false)
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      const errorMessage = error?.response?.data?.detail || error?.response?.data?.message || error?.message || 'Failed to update schedule'
-      alert(errorMessage)
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
@@ -321,76 +459,91 @@ export default function ElectionDetail({
   async function handleAddCourse(e) {
     e.preventDefault()
     try {
+      const url = `/api/v1/election/elections/${election.id}/courses/`
+      console.log('Request:', url)
       const payload = { course: parseInt(courseForm.course) }
-      await api.post(`/api/v1/election/elections/${election.id}/courses/`, payload)
+      const response = await api.post(url, payload)
+      console.log('Response:', response.data)
       alert('Course added successfully')
       setShowCourseModal(false)
       setCourseForm({ course: '' })
       loadCourses()
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      alert(error?.response?.data?.detail || 'Failed to add course')
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   async function handleAddYearLevel(e) {
     e.preventDefault()
     try {
+      const url = `/api/v1/election/elections/${election.id}/year_levels/`
+      console.log('Request:', url)
       const payload = { year_level: parseInt(yearForm.year_level) }
-      await api.post(`/api/v1/election/elections/${election.id}/year_levels/`, payload)
+      const response = await api.post(url, payload)
+      console.log('Response:', response.data)
       alert('Year level added successfully')
       setShowYearModal(false)
       setYearForm({ year_level: '' })
       loadYearLevels()
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      alert(error?.response?.data?.detail || 'Failed to add year level')
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   async function handleAddPosition(e) {
     e.preventDefault()
     try {
+      const url = `/api/v1/election/elections/${election.id}/positions/`
+      console.log('Request:', url)
       const payload = { title: positionForm.title, seat_count: parseInt(positionForm.seat_count) }
-      await api.post(`/api/v1/election/elections/${election.id}/positions/`, payload)
+      const response = await api.post(url, payload)
+      console.log('Response:', response.data)
       alert('Position added successfully')
       setShowPositionModal(false)
       setPositionForm({ title: '', seat_count: 1 })
       loadPositions()
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      alert(error?.response?.data?.detail || 'Failed to add position')
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   async function handleAddPartylist(e) {
     e.preventDefault()
     try {
+      const url = `/api/v1/election/elections/${election.id}/partylists/`
+      console.log('Request:', url)
       const payload = { partylist: parseInt(partylistForm.partylist) }
-      await api.post(`/api/v1/election/elections/${election.id}/partylists/`, payload)
+      const response = await api.post(url, payload)
+      console.log('Response:', response.data)
       alert('Partylist added successfully')
       setShowPartylistModal(false)
       setPartylistForm({ partylist: '' })
       loadPartylists()
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      alert(error?.response?.data?.detail || 'Failed to add partylist')
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   async function handleAddCandidate(e) {
     e.preventDefault()
     try {
+      const url = `/api/v1/election/elections/${election.id}/candidates/`
+      console.log('Request:', url)
       const payload = {
         student_enrollment: parseInt(candidateForm.student_enrollment),
         position: parseInt(candidateForm.position),
         partylist: candidateForm.partylist ? parseInt(candidateForm.partylist) : null
       }
-      await api.post(`/api/v1/election/elections/${election.id}/candidates/`, payload)
+      const response = await api.post(url, payload)
+      console.log('Response:', response.data)
       alert('Candidate added successfully')
       setShowCandidateModal(false)
       setCandidateForm({ student_enrollment: '', position: '', partylist: '' })
@@ -398,9 +551,8 @@ export default function ElectionDetail({
       loadCandidates()
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      const errorMessage = error.message || error.response?.data?.detail || error.response?.data?.error || error.response?.data || 'Failed to add candidate'
-      alert(errorMessage)
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
@@ -408,79 +560,112 @@ export default function ElectionDetail({
   async function handleRemoveCourse(itemId) {
     if (!confirm('Are you sure you want to remove this course?')) return
     try {
-      await api.delete(`/api/v1/election/elections/${election.id}/courses/${itemId}/`)
+      const url = `/api/v1/election/elections/${election.id}/courses/${itemId}/`
+      console.log('Request:', url)
+      const response = await api.delete(url)
+      console.log('Response:', response.data)
       alert('Course removed successfully')
       loadCourses()
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      alert('Failed to remove course')
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   async function handleRemoveYearLevel(itemId) {
     if (!confirm('Are you sure you want to remove this year level?')) return
     try {
-      await api.delete(`/api/v1/election/elections/${election.id}/year_levels/${itemId}/`)
+      const url = `/api/v1/election/elections/${election.id}/year_levels/${itemId}/`
+      console.log('Request:', url)
+      const response = await api.delete(url)
+      console.log('Response:', response.data)
       alert('Year level removed successfully')
       loadYearLevels()
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      alert('Failed to remove year level')
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   async function handleRemovePosition(itemId) {
     if (!confirm('Are you sure you want to remove this position?')) return
     try {
-      await api.delete(`/api/v1/election/elections/${election.id}/positions/${itemId}/`)
+      const url = `/api/v1/election/elections/${election.id}/positions/${itemId}/`
+      console.log('Request:', url)
+      const response = await api.delete(url)
+      console.log('Response:', response.data)
       alert('Position removed successfully')
       loadPositions()
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      alert('Failed to remove position')
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   async function handleRemovePartylist(itemId) {
     if (!confirm('Are you sure you want to remove this partylist?')) return
     try {
-      await api.delete(`/api/v1/election/elections/${election.id}/partylists/${itemId}/`)
+      const url = `/api/v1/election/elections/${election.id}/partylists/${itemId}/`
+      console.log('Request:', url)
+      const response = await api.delete(url)
+      console.log('Response:', response.data)
       alert('Partylist removed successfully')
       loadPartylists()
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      alert('Failed to remove partylist')
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   async function handleRemoveCandidate(itemId) {
     if (!confirm('Are you sure you want to remove this candidate?')) return
     try {
-      await api.delete(`/api/v1/election/elections/${election.id}/candidates/${itemId}/`)
+      const url = `/api/v1/election/elections/${election.id}/candidates/${itemId}/`
+      console.log('Request:', url)
+      const response = await api.delete(url)
+      console.log('Response:', response.data)
       alert('Candidate removed successfully')
       loadCandidates()
       loadElectionDetails()
     } catch (error) {
-      console.error(error)
-      alert('Failed to remove candidate')
+      console.error('API Error:', error.response?.data)
+      alert(JSON.stringify(error.response?.data, null, 2))
     }
   }
 
   // Filter students based on search query
-  const filteredStudents = studentEnrollments.filter(enrollment => {
+  const filteredStudents = studentEnrollments.filter(student => {
     const searchLower = studentSearchQuery.toLowerCase()
-    const fullName = enrollment.student?.full_name?.toLowerCase() || ''
-    return fullName.includes(searchLower)
+    // Handle both new students endpoint format and fallback enrollment format
+    const fullName = student.full_name?.toLowerCase() || 
+                    student.student?.full_name?.toLowerCase() || 
+                    student.student?.username?.toLowerCase() || ''
+    const course = student.course?.toLowerCase() || 
+                   student.course?.name?.toLowerCase() || 
+                   student.student?.course?.name?.toLowerCase() || ''
+    const yearLevel = String(student.year_level || 
+                           student.student?.year_level || '')
+    return fullName.includes(searchLower) || course.includes(searchLower) || yearLevel.includes(searchLower)
   })
 
   // Calculate turnout
   const totalEligible = eligibleStudents.length || 0
   const votesCast = Array.isArray(votes) ? votes.length : 0
   const turnoutPercentage = totalEligible > 0 ? ((votesCast / totalEligible) * 100).toFixed(1) : 0
+
+  // Normalize status for consistent comparison
+  const status = details?.status?.toLowerCase() || ''
+  
+  // Debugging logs
+  console.log('Role:', userRole)
+  console.log('Status:', details?.status)
+  console.log('Normalized Status:', status)
+  console.log('Candidates:', candidates)
+  console.log('Is Student:', isStudent)
 
 
   return (
@@ -516,11 +701,11 @@ export default function ElectionDetail({
           <div className="schedule-header">
             <div>
               <h2>{details.name}</h2>
-              <div className={`election-status-badge ${details.status?.toUpperCase() === 'DRAFTED' ? 'status-drafted' : details.status?.toUpperCase() === 'ENABLED' ? 'status-enabled' : 'status-ended'}`}>
+              <div className={`election-status-badge ${status === 'drafted' ? 'status-drafted' : status === 'active' ? 'status-enabled' : 'status-ended'}`}>
                 {details.status?.toUpperCase() || details.status}
               </div>
             </div>
-            {!isStudent && details.status?.toUpperCase() === 'DRAFTED' && (
+            {!isStudent && status === 'drafted' && (
               <button
                 className="workspace-secondary-btn"
                 onClick={openUpdateTimeModal}
@@ -580,7 +765,6 @@ export default function ElectionDetail({
           <div className="election-records">
 
             {/* ALLOWED COURSES */}
-
             <div className="config-card">
 
               <div className="config-title">
@@ -631,7 +815,6 @@ export default function ElectionDetail({
             </div>
 
             {/* YEAR LEVELS */}
-
             <div className="config-card">
 
               <div className="config-title">
@@ -682,7 +865,6 @@ export default function ElectionDetail({
             </div>
 
             {/* POSITIONS */}
-
             <div className="config-card">
 
               <div className="config-title">
@@ -741,7 +923,6 @@ export default function ElectionDetail({
           <div className="election-actions">
 
             {/* PARTYLISTS */}
-
             <div className="config-card">
 
               <div className="config-title">
@@ -792,7 +973,6 @@ export default function ElectionDetail({
             </div>
 
             {/* CANDIDATES */}
-
             <div className="config-card">
 
               <div className="config-title">
@@ -905,7 +1085,7 @@ export default function ElectionDetail({
             {/* ELECTION ACTIONS */}
             {!isStudent && (
               <div className="election-actions-row">
-                {details?.status?.toUpperCase() === 'DRAFTED' && (
+                {status === 'drafted' && (
                   <button
                     className="election-action-card"
                     onClick={handleLaunchElection}
@@ -914,7 +1094,7 @@ export default function ElectionDetail({
                     Launch Election
                   </button>
                 )}
-                {details?.status?.toUpperCase() === 'ACTIVE' && (
+                {status === 'active' && (
                   <button
                     className="election-action-card danger"
                     onClick={endElection}
@@ -923,7 +1103,7 @@ export default function ElectionDetail({
                     End Election
                   </button>
                 )}
-                {details?.status?.toUpperCase() === 'ENDED' && (
+                {status === 'ended' && (
                   <button
                     className="election-action-card"
                     onClick={handleViewResults}
@@ -936,13 +1116,24 @@ export default function ElectionDetail({
             )}
 
             {/* VOTE NOW */}
-            {isStudent && (
+            {isStudent && status === 'active' && (
               <button
                 className="election-action-card"
                 onClick={handleVoteNow}
               >
                 <VoteIcon size={20} />
                 Vote Now
+              </button>
+            )}
+
+            {/* VIEW RESULTS FOR STUDENTS */}
+            {isStudent && status === 'ended' && (
+              <button
+                className="election-action-card"
+                onClick={handleViewResults}
+              >
+                <BarChart3 size={20} />
+                View Results
               </button>
             )}
 
@@ -1197,9 +1388,9 @@ export default function ElectionDetail({
                     required
                   >
                     <option value="">Select Student</option>
-                    {filteredStudents.map((enrollment) => (
-                      <option key={enrollment.id} value={enrollment.id}>
-                        {enrollment.student?.full_name || enrollment.student?.username || 'Unknown'} - {enrollment.course?.name || enrollment.course || 'N/A'} (Year {enrollment.year_level || 'N/A'})
+                    {filteredStudents.map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.full_name || student.student?.full_name || student.student?.username || 'Unknown'} ({student.course || student.course?.name || student.student?.course?.name || 'N/A'} - Year {student.year_level || student.student?.year_level || 'N/A'})
                       </option>
                     ))}
                   </select>
@@ -1285,6 +1476,85 @@ export default function ElectionDetail({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* RESULTS MODAL */}
+      {showResultsModal && resultsData && (
+        <div className="modal-overlay" onClick={() => setShowResultsModal(false)}>
+          <div className="modal-card results-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Election Results</h3>
+              <button onClick={() => setShowResultsModal(false)} aria-label="Close modal">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="results-content">
+              {/* Election Summary */}
+              <div className="results-summary">
+                <h4>Election Summary</h4>
+                <div className="summary-grid">
+                  <div className="summary-item">
+                    <span className="summary-label">Total Possible Votes</span>
+                    <span className="summary-value">{resultsData.total_possible_votes}</span>
+                  </div>
+                  <div className="summary-item">
+                    <span className="summary-label">Total Votes</span>
+                    <span className="summary-value">{resultsData.total_votes}</span>
+                  </div>
+                  <div className="summary-item">
+                    <span className="summary-label">Turnout Percentage</span>
+                    <span className="summary-value">{resultsData.turnout_percentage?.toFixed(2)}%</span>
+                  </div>
+                  <div className="summary-item">
+                    <span className="summary-label">Abstained Students</span>
+                    <span className="summary-value">{resultsData.abstained_students}</span>
+                  </div>
+                  <div className="summary-item">
+                    <span className="summary-label">Generated At</span>
+                    <span className="summary-value">{new Date(resultsData.generated_at).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Position Results */}
+              <div className="position-results">
+                <h4>Position Results</h4>
+                {resultsData.candidate_results?.map((positionResult, index) => (
+                  <div key={index} className="position-result-section">
+                    <div className="position-header">
+                      <h5>{positionResult.position}</h5>
+                      <span className="abstained-badge">Abstained: {positionResult.abstained_votes}</span>
+                    </div>
+                    <table className="results-table">
+                      <thead>
+                        <tr>
+                          <th>Rank</th>
+                          <th>Candidate</th>
+                          <th>Votes</th>
+                          <th>Vote %</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {positionResult.candidates?.map((candidate) => (
+                          <tr key={candidate.candidate_id}>
+                            <td>
+                              <span className={`rank-badge rank-${candidate.ranking}`}>
+                                #{candidate.ranking}
+                              </span>
+                            </td>
+                            <td>{candidate.candidate_name}</td>
+                            <td>{candidate.total_votes}</td>
+                            <td>{candidate.vote_percentage?.toFixed(2)}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}

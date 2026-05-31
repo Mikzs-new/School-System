@@ -22,7 +22,13 @@ export default function Elections({
   })
   const [submitting, setSubmitting] = useState(false)
   const userRole = authStore.getRole()
+  const currentUser = authStore.getState().user
   const isStudent = userRole === 'student'
+  
+  // Global debugging
+  console.log('Elections - Current User:', currentUser)
+  console.log('Elections - Current Role:', userRole)
+  console.log('Elections - Is Student:', isStudent)
 
   useEffect(() => {
     loadElections()
@@ -31,10 +37,32 @@ export default function Elections({
   async function loadElections() {
     try {
       setLoading(true)
-      const response = await api.get('/api/v1/election/elections/')
-      setElections(response.data || [])
+      const url = '/api/v1/election/elections/'
+      console.log('Request:', url)
+      const response = await api.get(url)
+      console.log('Response:', response.data)
+      
+      // Filter elections based on role
+      let filteredElections = response.data || []
+      
+      // Log all election statuses for debugging
+      console.log('All election statuses:', filteredElections.map(e => ({ id: e.id, name: e.name, status: e.status })))
+      
+      if (isStudent) {
+        // Students only see active elections
+        filteredElections = filteredElections.filter(e => {
+          const status = e.status?.toLowerCase()
+          console.log(`Election ${e.id} (${e.name}) status: ${status}`)
+          return status === 'active'
+        })
+        console.log('Filtered elections for student:', filteredElections)
+      }
+      // Staff see all elections (drafted, enabled, ended)
+      
+      setElections(filteredElections)
     } catch (error) {
-      console.error('Error loading elections:', error)
+      console.error('API Error:', error.response?.data)
+      alert('Failed to load elections: ' + JSON.stringify(error.response?.data, null, 2))
     } finally {
       setLoading(false)
     }
@@ -44,35 +72,31 @@ export default function Elections({
     e.preventDefault()
     setSubmitting(true)
     try {
-      // Convert local datetime to ISO string for backend (preserving local time)
+      // Convert local datetime to ISO string for backend (with UTC timezone)
       const formatToISO = (localDateTime) => {
         if (!localDateTime) return null
         const date = new Date(localDateTime)
-        // Get the date components in local timezone
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        const hours = String(date.getHours()).padStart(2, '0')
-        const minutes = String(date.getMinutes()).padStart(2, '0')
-        // Return ISO string without timezone conversion
-        return `${year}-${month}-${day}T${hours}:${minutes}:00`
+        // Return ISO string with 'Z' suffix to indicate UTC
+        return date.toISOString()
       }
       
+      const url = '/api/v1/election/elections/'
+      console.log('Request:', url)
       const payload = {
         name: createForm.name,
         description: createForm.description || '',
         start_datetime: formatToISO(createForm.start_datetime),
         end_datetime: formatToISO(createForm.end_datetime)
       }
-      await api.post('/api/v1/election/elections/', payload)
+      const response = await api.post(url, payload)
+      console.log('Response:', response.data)
       setShowCreateModal(false)
       setCreateForm({ name: '', description: '', start_datetime: '', end_datetime: '' })
       alert('Election created successfully!')
       loadElections()
     } catch (error) {
-      console.error('Error creating election:', error)
-      const errorMessage = error.message || error.response?.data?.detail || error.response?.data || 'Failed to create election'
-      alert(errorMessage)
+      console.error('API Error:', error.response?.data)
+      alert('Failed to create election: ' + JSON.stringify(error.response?.data, null, 2))
     } finally {
       setSubmitting(false)
     }
@@ -88,11 +112,12 @@ export default function Elections({
   }
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'ACTIVE': return 'status-enabled'
-      case 'SCHEDULED': return 'status-scheduled'
-      case 'DRAFTED': return 'status-drafted'
-      case 'ENDED': return 'status-ended'
+    const statusLower = status?.toLowerCase() || ''
+    switch (statusLower) {
+      case 'active': return 'status-enabled'
+      case 'scheduled': return 'status-scheduled'
+      case 'drafted': return 'status-drafted'
+      case 'ended': return 'status-ended'
       default: return 'status-drafted'
     }
   }

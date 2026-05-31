@@ -35,10 +35,11 @@ export default function Partylists() {
 
       setLoading(true)
 
+      const url = '/api/v1/election/partylists/'
+      console.log('Request:', url)
       const response =
-        await api.get(
-          '/api/v1/election/partylists/'
-        )
+        await api.get(url)
+      console.log('Response:', response.data)
 
       setPartylists(
         response.data || []
@@ -46,7 +47,15 @@ export default function Partylists() {
 
     } catch (error) {
 
-      console.error(error)
+      console.error('API Error:', error.response?.data)
+      
+      if (error.response?.status === 401) {
+        alert('Authentication failed. Please log in again.')
+        authStore.clearAuth()
+        window.location.reload()
+      } else {
+        alert('Failed to load partylists: ' + JSON.stringify(error.response?.data, null, 2))
+      }
 
     } finally {
 
@@ -60,10 +69,10 @@ export default function Partylists() {
 
     try {
 
-      await api.post(
-        '/api/v1/election/partylists/',
-        formData
-      )
+      const url = '/api/v1/election/partylists/'
+      console.log('Request:', url)
+      const response = await api.post(url, formData)
+      console.log('Response:', response.data)
 
       alert(
         'Partylist added successfully'
@@ -78,20 +87,15 @@ export default function Partylists() {
 
     } catch (error) {
 
-      console.error(error)
-
-      alert(
-
-        error?.response?.data
-
-          ? JSON.stringify(
-              error.response.data,
-              null,
-              2
-            )
-
-          : 'Failed to add partylist'
-      )
+      console.error('API Error:', error.response?.data)
+      
+      if (error.response?.status === 401) {
+        alert('Authentication failed. Please log in again.')
+        authStore.clearAuth()
+        window.location.reload()
+      } else {
+        alert('Failed to add partylist: ' + JSON.stringify(error.response?.data, null, 2))
+      }
     }
   }
 

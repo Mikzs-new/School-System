@@ -135,6 +135,21 @@ const FORM_HELP = {
       end_datetime:
         '2026-05-06T17:00:00Z'
     }
+  },
+
+  school_year: {
+    required: [
+      'year',
+      'start_date',
+      'end_date',
+      'is_active'
+    ],
+    example: {
+      year: '2026-2027',
+      start_date: '2026-08-01',
+      end_date: '2027-05-31',
+      is_active: true
+    }
   }
 };
 

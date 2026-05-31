@@ -76,10 +76,16 @@ class Election(TimeStampedModel):
 
     @property
     def is_active(self):
+        print("STATUS:", self.status)
+        print("NOW:", timezone.now())
+        print("START:", self.start_datetime)
+        print("END:", self.end_datetime)
+        print("START CHECK:", self.start_datetime <= timezone.now())
+        print("END CHECK:", timezone.now() <= self.end_datetime)
+        
         if self.status != ElectionStatus.ACTIVE:
             return False
         time = timezone.now()
-        print(time)
         return (self.start_datetime <= time <= self.end_datetime)
     
     @property
