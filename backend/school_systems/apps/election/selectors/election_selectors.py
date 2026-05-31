@@ -5,8 +5,6 @@ from django.db.models import Q
 from apps.election.models.election import Election, ElectionStatus
 from apps.student.models import StudentEnrollment
 
-from shared.utils.helper.school import get_current_school_year
-
 class ElectionSelector:
 
     @staticmethod
