@@ -59,9 +59,8 @@ export const ROLE_PERMISSIONS = {
 
     'partylists.read',
 
-    'elections.read',
+    'elections.read'
 
-    'vote.cast'
   ]
 };
 

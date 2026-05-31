@@ -10,14 +10,12 @@ import {
   Building2,
   BarChart3,
   GraduationCap,
-  Landmark,
   LayoutDashboard,
   ListChecks,
   LogOut,
   School,
   ScrollText,
   UserCog,
-  UsersRound,
   Vote
 } from 'lucide-react';
 
@@ -25,14 +23,12 @@ import Login from './views/Login.jsx';
 import Dashboard from './views/Dashboard.jsx';
 import Voting from './views/Voting.jsx';
 import Students from './views/Students.jsx';
-import Candidates from './views/Candidates.jsx';
 import Partylist from './views/Partylist.jsx';
 import Elections from './views/Elections.jsx';
 import Facilitators from './views/Facilitators.jsx';
 import Departments from './views/Departments.jsx';
 import Courses from './views/Courses.jsx';
 import Schools from './views/Schools.jsx';
-import Votes from './views/Votes.jsx';
 
 import { authStore } from './state/authStore.js';
 import { hasPermission } from './state/permissionGuard.js';
@@ -104,20 +100,6 @@ const ROUTES = {
     component: Partylist
   },
 
-  candidates: {
-    label: 'Candidates',
-    icon: UsersRound,
-    permission: 'candidates.read',
-    component: Candidates
-  },
-
-  votes: {
-    label: 'Votes',
-    icon: Landmark,
-    permission: 'votes.read',
-    component: Votes
-  },
-
   voting: {
     label: 'Voting',
     icon: Vote,
@@ -136,8 +118,6 @@ const ROLE_ROUTES = {
     'facilitators',
     'elections',
     'partylists',
-    'candidates',
-    'votes',
     'voting'
   ],
 
@@ -147,14 +127,11 @@ const ROLE_ROUTES = {
     'courses',
     'students',
     'elections',
-    'partylists',
-    'candidates',
-    'votes'
+    'partylists'
   ],
 
   student: [
     'dashboard',
-    'candidates',
     'partylists',
     'elections',
     'voting'

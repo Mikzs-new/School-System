@@ -3,19 +3,12 @@ import {
   Plus,
   Upload,
   MoreVertical,
-  GraduationCap,
-  X,
-  CheckCircle,
-  AlertCircle,
-  FileText
+  GraduationCap
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
 
-import axios from 'axios';
-
-import api from "../api/apiClient";
-import { authStore } from '../state/authStore.js'
+import api from "../../services/apiClient";
 
 export default function Students() {
 
@@ -29,15 +22,6 @@ export default function Students() {
     useState(true);
 
   const [showModal, setShowModal] =
-    useState(false);
-
-  const [showImportModal, setShowImportModal] =
-    useState(false);
-
-  const [importResult, setImportResult] =
-    useState(null);
-
-  const [importing, setImporting] =
     useState(false);
 
   const [formData, setFormData] =
@@ -111,15 +95,7 @@ export default function Students() {
     const file =
       event.target.files[0];
 
-    if (!file) {
-      alert('Please select a CSV file');
-      return;
-    }
-
-    setImporting(true);
-    setImportResult(null);
-
-    console.log('Uploading file:', file.name, file.size, file.type);
+    if (!file) return;
 
     try {
 
@@ -131,54 +107,30 @@ export default function Students() {
         file
       );
 
-      console.log('FormData file:', form.get('file'));
-
-      // Use standard axios for file upload to bypass custom adapter
-      const token = authStore.getToken();
-      const apiUrl = process.env.API_URL || "http://localhost:8000/api/v1";
-      const baseUrl = apiUrl.endsWith('/api/v1') ? apiUrl : `${apiUrl}/api/v1`;
-      const response = await axios.post(
-        `${baseUrl}/student/student-csv/`,
+      await api.post(
+        "/api/v1/student/import-csv/",
         form,
         {
           headers: {
-            'Authorization': token ? `Bearer ${token}` : undefined
+            "Content-Type":
+              "multipart/form-data"
           }
         }
       );
 
       await fetchStudents();
 
-      setImportResult(response.data);
-      setShowImportModal(true);
+      alert(
+        "CSV imported successfully"
+      );
 
     } catch (error) {
 
-      console.error("CSV Import Error:", error);
-      console.error("Error response:", error.response);
-      console.error("Error data:", error.response?.data);
+      console.error(error);
 
-      const errorMessage =
-        error.response?.data?.detail ||
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        (typeof error.response?.data === 'string' ? error.response.data : null) ||
-        error.message ||
-        "CSV import failed";
-
-      setImportResult({
-        Errors: [{ row: 0, error: errorMessage }],
-        Updated_count: 0,
-        Created_count: 0
-      });
-      setShowImportModal(true);
-
-    } finally {
-
-      setImporting(false);
-
-      // Reset file input
-      event.target.value = '';
+      alert(
+        "CSV import failed"
+      );
     }
   }
 
@@ -360,14 +312,13 @@ export default function Students() {
 
             <Upload size={18} />
 
-            {importing ? 'Importing...' : 'Import CSV'}
+            Import CSV
 
             <input
               type="file"
               accept=".csv"
               hidden
               onChange={handleCSVImport}
-              disabled={importing}
             />
 
           </label>
@@ -542,134 +493,6 @@ export default function Students() {
               </div>
 
             </form>
-
-          </div>
-
-        </div>
-
-      )}
-
-      {/* IMPORT RESULTS MODAL */}
-
-      {showImportModal && importResult && (
-
-        <div className="modal-overlay" onClick={() => setShowImportModal(false)}>
-
-          <div className="modal-card import-results-modal" onClick={(e) => e.stopPropagation()}>
-
-            <div className="modal-header">
-
-              <h3>CSV Import Results</h3>
-
-              <button onClick={() => setShowImportModal(false)} aria-label="Close modal">
-
-                <X size={20} />
-
-              </button>
-
-            </div>
-
-            <div className="import-summary">
-
-              <div className="import-stat success">
-
-                <CheckCircle size={24} />
-
-                <div>
-
-                  <span className="import-stat-value">
-                    {importResult.Created_count || 0}
-                  </span>
-
-                  <span className="import-stat-label">
-                    Imported
-                  </span>
-
-                </div>
-
-              </div>
-
-              <div className="import-stat updated">
-
-                <FileText size={24} />
-
-                <div>
-
-                  <span className="import-stat-value">
-                    {importResult.Updated_count || 0}
-                  </span>
-
-                  <span className="import-stat-label">
-                    Updated
-                  </span>
-
-                </div>
-
-              </div>
-
-              <div className="import-stat error">
-
-                <AlertCircle size={24} />
-
-                <div>
-
-                  <span className="import-stat-value">
-                    {importResult.Errors?.length || 0}
-                  </span>
-
-                  <span className="import-stat-label">
-                    Errors
-                  </span>
-
-                </div>
-
-              </div>
-
-            </div>
-
-            {importResult.Errors && importResult.Errors.length > 0 && (
-
-              <div className="import-errors-section">
-
-                <h4>Errors</h4>
-
-                <div className="import-errors-list">
-
-                  {importResult.Errors.map((error, index) => (
-
-                    <div key={index} className="import-error-item">
-
-                      <span className="error-row">
-                        Row {error.row || 'N/A'}:
-                      </span>
-
-                      <span className="error-message">
-                        {typeof error.error === 'string' ? error.error : JSON.stringify(error.error)}
-                      </span>
-
-                    </div>
-
-                  ))}
-
-                </div>
-
-              </div>
-
-            )}
-
-            <div className="modal-actions">
-
-              <button
-                type="button"
-                onClick={() => setShowImportModal(false)}
-                className="workspace-primary-btn"
-              >
-
-                Close
-
-              </button>
-
-            </div>
 
           </div>
 
