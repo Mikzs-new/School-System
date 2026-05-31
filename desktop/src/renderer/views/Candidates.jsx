@@ -70,7 +70,7 @@ export default function Candidates() {
       ] = await Promise.all([
 
         api.get(
-          '/api/v1/election/candidates/'
+          '`/api/v1/election/elections/${selectedElectionId}/candidates/`'
         ),
 
         api.get(
@@ -183,7 +183,7 @@ export default function Candidates() {
 
       const response =
         await api.post(
-          '/api/v1/election/candidates/',
+          '/api/v1/election/elections/:id/candidates/',
           payload
         )
 

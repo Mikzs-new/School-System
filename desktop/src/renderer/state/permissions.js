@@ -95,20 +95,6 @@ export const MODULES = {
     primaryPermission: 'partylists.read'
   },
 
-  candidates: {
-    label: 'Candidates',
-    endpoint: '/api/v1/election/candidates/',
-    permissionModule: 'candidates',
-    primaryPermission: 'candidates.read'
-  },
-
-  votes: {
-    label: 'Votes',
-    endpoint: '/api/v1/election/votes/',
-    permissionModule: 'votes',
-    primaryPermission: 'votes.read'
-  },
-
   courses: {
     label: 'Courses',
     endpoint: '/api/v1/courses/',

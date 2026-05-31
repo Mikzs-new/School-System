@@ -6,9 +6,7 @@ from apps.election.models.eligibility import ElectionEligiblePosition, ElectionE
 from apps.election.models.election import Election
 from apps.election.models.vote import Vote
 
-from apps.student.models import StudentEnrollment
-
-from .nested import SmallElectionSerializer, SmallPositionSerializer, SmallCourseSerializer, SmallPartylistSerializer, SmallCandidateSerializer
+from .nested import SmallElectionSerializer, SmallPositionSerializer, SmallCourseSerializer, SmallPartylistSerializer
 
 from apps.student.api.v1.serializers.nested import SmallStudentSerializer
 
@@ -18,17 +16,10 @@ class ElectionEligiblePositionListSerializer(serializers.ModelSerializer):
         fields = ['id','title','seat_count']
 
 class ElectionEligibleCourseListSerializer(serializers.ModelSerializer):
-    course = serializers.CharField(
-        source='course.name',
-        read_only=True
-    )
-    initials = serializers.CharField(
-        source='course.initials',
-        read_only=True
-    )
+    course = SmallCourseSerializer(read_only=True)
     class Meta:
         model = ElectionEligibleCourse
-        fields = ['id','course','initials']
+        fields = ['id','course']
 
 class ElectionEligibleYearLevelListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,31 +27,11 @@ class ElectionEligibleYearLevelListSerializer(serializers.ModelSerializer):
         fields = ['id','year_level']
 
 class CandidateListSerializer(serializers.ModelSerializer):
-    position = serializers.CharField(
-        source='position.title',
-        read_only=True,
-    )
-    full_name = serializers.CharField(
-        source='student_enrollment.student.full_name',
-        read_only=True,
-    )
-    course = serializers.CharField(
-        source='student_enrollment.course.name',
-        read_only=True,
-    )
-    year_level = serializers.CharField(
-        source='student_enrollment.year_level',
-        read_only=True,
-    )
-    partylist = serializers.SerializerMethodField()
+    student_enrollment = SmallStudentSerializer(read_only=True)
+    position = SmallPositionSerializer(read_only=True)
     class Meta:
         model = Candidate
-        fields = ['id','full_name','course','year_level','position','partylist']
-
-    def get_partylist(self,obj):
-        if obj.partylist:
-            return obj.partylist.partylist.initials
-        return None
+        fields = ['id','student_enrollment','position','partylist']
 
 class PartylistListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -68,17 +39,10 @@ class PartylistListSerializer(serializers.ModelSerializer):
         fields = ['id','name']
 
 class PartylistElectionListSerializer(serializers.ModelSerializer):
-    partylist = serializers.CharField(
-        source='partylist.name',
-        read_only=True
-    )
-    initials = serializers.CharField(
-        source='partylist.initials',
-        read_only=True
-    )
+    partylist = SmallPartylistSerializer(read_only=True)
     class Meta:
         model = PartylistElection
-        fields = ['id','partylist','initials']
+        fields = ['id','partylist']
 
 class ElectionListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -93,21 +57,4 @@ class VoteListSerializer(serializers.ModelSerializer):
         fields = ['id','student_enrollment','election']
 
 
-class EligibleStudentsListSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(
-        source='student.full_name',
-        read_only=True
-    )
-    course = serializers.CharField(
-        source='course.name',
-        read_only=True
-    )
-    class Meta:
-        model = StudentEnrollment
-        fields = ['id','full_name','course','year_level']
-
-class VotingCandidatesListSerializer(serializers.ModelSerializer):
-    candidates = SmallCandidateSerializer(many=True,read_only=True)
-    class Meta:
-        model = ElectionEligiblePosition
-        fields = ['id','title','seat_count','candidates']
+    

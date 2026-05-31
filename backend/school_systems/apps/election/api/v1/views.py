@@ -14,12 +14,10 @@ from apps.election.models.eligibility import PartylistElection, ElectionEligible
 from apps.election.models.partylist import Partylist
 from apps.election.models.vote import Vote
 
-from apps.student.models import StudentEnrollment
-
 from .serializers.create import CandidateCreateSerializer, PartylistCreateSerializer, ElectionCreateSerializer, ElectionEligiblePositionCreateSerializer, VoteCreateSerializer, PartylistElection, ElectionEligibleCourseCreateSerializer, ElectionEligibleYearLevelCreateSerializer, PartylistElectionCreateSerializer
 from .serializers.detail import ElectionDetailSerializer, PartylistDetailSerializer, CandidateDetailSerializer, ElectionResultSerializer
-from .serializers.list import ElectionListSerializer, PartylistListSerializer, CandidateListSerializer, ElectionEligibleCourseListSerializer, ElectionEligiblePositionListSerializer, ElectionEligibleYearLevelListSerializer, PartylistElectionListSerializer, VoteListSerializer, EligibleStudentsListSerializer, VotingCandidatesListSerializer
-from .serializers.update import ElectionUpdateSerializer, ElectionUpdateTimeSerializer
+from .serializers.list import ElectionListSerializer, PartylistListSerializer, CandidateListSerializer, ElectionEligibleCourseListSerializer, ElectionEligiblePositionListSerializer, ElectionEligibleYearLevelListSerializer, PartylistElectionListSerializer, VoteListSerializer
+from .serializers.update import ElectionUpdateSerializer
 
 from apps.election.services.vote_services import VoteService
 from apps.election.services.election_services import ElectionService
@@ -125,35 +123,6 @@ class ElectionViewSet(viewsets.ModelViewSet):
 
         return Response({'message':'Election created', 'id': election.id}, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['patch'])
-    def update_time(self, request, pk=None):
-        election = self.get_object()
-
-        if not hasattr(request.user, 'school_staff_profile'):
-            raise ValidationError(
-                'Only staff can update election time'
-            )
-
-        if election.status != ElectionStatus.DRAFTED:
-            raise ValidationError('Cannot make changes in election')
-
-        serializer = ElectionUpdateTimeSerializer(
-            data=request.data
-        )
-
-        serializer.is_valid(raise_exception=True)
-
-        ElectionService.update_time(
-            election=election,
-            start_datetime=serializer.validated_data['start_datetime'],
-            end_datetime=serializer.validated_data['end_datetime']
-        )
-
-        return Response(
-            {'message': 'Election schedule updated successfully'},
-            status=status.HTTP_200_OK
-        )
-
     @action(detail=True, methods=['post'])
     def end_election(self, request, pk=None):
         election = self.get_object()
@@ -169,27 +138,10 @@ class ElectionViewSet(viewsets.ModelViewSet):
         if not hasattr(user, 'school_staff_profile'):
             raise ValidationError('User has no permission')
 
-        election_snapshot = ElectionService.generate_snapshot(school_staff_profile=user.school_staff_profile,election=election)
+        election_snapshot = ElectionService.generate_snapshot(schooL_staff_profile=user.school_staff_profile,election=election)
 
         return Response({"message": "Election ended and records saved successfully", "id": election_snapshot.id},status=status.HTTP_202_ACCEPTED)
     
-    @action(detail=True, methods=['post'])
-    def start_election(self, request, pk=None):
-        election = self.get_object()
-
-        if election.status != ElectionStatus.DRAFTED:
-            raise ValidationError('Election current status is not drafted')
-        
-        user = request.user
-
-        election.status = ElectionStatus.ENABLED
-        election.save(update_fields=['status'])
-        
-        Election.objects.filter(election=election).update(status=ElectionStatus.ENABLED)
-
-        return Response({'message': 'Election started successfully'}, status=status.HTTP_200_OK)
-
-
     @action(detail=True, methods=['get'])
     def results(self, request, pk=None):
         election = self.get_object()
@@ -198,30 +150,6 @@ class ElectionViewSet(viewsets.ModelViewSet):
             raise ValidationError('Election results are not avaliable yet')
         
         serializer = ElectionResultSerializer(election)
-
-        return Response(serializer.data)
-
-    @action(detail=True, methods=['get'])
-    def students(self, request, pk=None):
-
-        if not hasattr(self.request.user, 'school_staff_profile'):
-            raise ValidationError('No permission to access')
-
-        election = self.get_object()
-
-        year_levels = ElectionEligibleYearLevel.objects.filter(election=election).values_list('year_level', flat=True)
-        courses = ElectionEligibleCourse.objects.filter(election=election).values_list('course', flat=True)
-
-        students = StudentEnrollment.objects.select_related(
-            'student',
-            'course'
-        ).filter(
-            school_year=election.school_year,
-            year_level__in=year_levels,
-            course__in=courses
-        )
-
-        serializer = EligibleStudentsListSerializer(students,many=True)
 
         return Response(serializer.data)
 
@@ -325,7 +253,7 @@ class ElectionEligiblePositionViewSet(viewsets.GenericViewSet,
 
         position = ElectionService.create_position(
             school_staff_profile=school_staff_profile,
-            election=election,
+            election=election
             **serializer.validated_data
         )
 
@@ -464,7 +392,7 @@ class VoteViewSet(viewsets.GenericViewSet,
                                     mixins.ListModelMixin):
     def get_permissions(self):
         if self.action == 'list':
-            return [IsAuthenticated()]
+            return [IsAuthenticated(), CanManageElection()]
         return [IsAuthenticated(), CanVote()]
 
     def get_election(self):
@@ -483,12 +411,11 @@ class VoteViewSet(viewsets.GenericViewSet,
         return Vote.objects.filter(election=election)
 
     def get_serializer_class(self):
-        user = self.request.user
         if self.action == 'create':
             return VoteCreateSerializer
-        elif self.action == 'list':
-            return VotingCandidatesListSerializer
-        return VotingCandidatesListSerializer
+        if self.action == 'list':
+            return VoteListSerializer
+        return VoteListSerializer
     
     def create(self, request, *args, **kwargs):
 
@@ -507,16 +434,11 @@ class VoteViewSet(viewsets.GenericViewSet,
 
         vote = VoteService.cast_vote(
             student_profile=request.user.student_profile, 
-            election=election,
+            electi=election
             **serializer.validated_data
         )
 
-        return Response({'message': 'vote submitted', 'vote':vote.id},status=status.HTTP_201_CREATED)
-    def list(self, request, *args, **kwargs):
-        election = self.get_election()
-        positions = ElectionEligiblePosition.objects.filter(election=election)
-        serializer = VotingCandidatesListSerializer(positions,many=True)
-        return Response(serializer.data)
+        return Response({'message': 'vote_submitted', 'vote':vote.id},status=status.HTTP_201_CREATED)
 
 class CandidateViewSet(viewsets.GenericViewSet, 
                                     mixins.CreateModelMixin,
@@ -575,4 +497,66 @@ class CandidateViewSet(viewsets.GenericViewSet,
 
         return Response({'message':'Candidate created', 'id': candidate.id}, status=status.HTTP_201_CREATED)    
 
+class CandidateViewSet(viewsets.ModelViewSet):
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    def get_permissions(self):
+
+        if self.action in ['list','retrieve']:
+            return [IsAuthenticated()]
+
+        return [IsAuthenticated(), CanManageElection()]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_staff:
+            queryset = Candidate.objects.all()
+        elif hasattr(user, 'school_staff_profile'):
+            queryset = Candidate.objects.filter(
+                election__school_year__school=user.school_staff_profile.school
+            )
+        
+        elif hasattr(user, 'student_profile'):
+            queryset = Candidate.objects.filter(
+                election__school_year__school=user.student_profile.school
+            )
+        else: 
+            return Candidate.objects.none()
+        
+        election = self.request.query_params.get('election')
+
+        if election:
+            queryset = queryset.filter(
+                election=election
+            )
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return CandidateDetailSerializer
+        elif self.action == 'create':
+            return CandidateCreateSerializer
+        elif self.action == 'list':
+            return CandidateListSerializer
+        return CandidateListSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        if not hasattr(request.user, 'school_staff_profile'):
+            raise ValidationError("Only staff can create candidate")
+
+        school_staff_profile = request.user.school_staff_profile
+
+        candidate = CandidateService.create_candidate(
+            school_staff_profile=school_staff_profile,
+            **serializer.validated_data
+        )
+
+        return Response({'message':'Candidate created', 'id': candidate.id}, status=status.HTTP_201_CREATED)    
    

@@ -26,7 +26,7 @@ class CandidateService:
         if not ElectionEligibleCourse.objects.filter(election=election,course=student_enrollment.course).exists() or not ElectionEligibleYearLevel.objects.filter(election=election, year_level=student_enrollment.year_level).exists():
             raise ValidationError('Student is not eligible to run for candidacy')
         
-        if not ElectionEligiblePosition.objects.filter(election=election,title=position.title).exists():
+        if not ElectionEligiblePosition.objects.filter(election=election,position=position).exists():
             raise ValidationError('Election does not have such position')
 
         if Candidate.objects.filter(election=election,student_enrollment=student_enrollment).exists():
