@@ -3,7 +3,6 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { createRoot } from 'react-dom/client';
 
 import {
   BookOpen,
@@ -20,11 +19,13 @@ import {
 } from 'lucide-react';
 
 import Login from './views/auth/LoginPage.jsx';
+import ForgotPasswordPage from './views/auth/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './views/auth/ResetPasswordPage.jsx';
 import Dashboard from './views/facilitator/DashboardPage.jsx';
 import Elections from './views/facilitator/ElectionsPage.jsx';
 import Candidates from './views/facilitator/CandidatesPage.jsx';
 import Students from './views/facilitator/StudentsPage.jsx';
-import Results from './views/facilitator/ResultsPage.jsx';
+import ElectionDetail from './views/facilitator/ElectionDetailPage.jsx';
 
 import { authStore } from './state/authStore.js';
 import { hasPermission } from './state/permissionGuard.js';
@@ -55,7 +56,7 @@ const ROUTES = {
   },
 
   candidates: {
-    label: 'Candidates',
+    label: 'Party Lists',
     icon: UserCog,
     permission: 'candidates.read',
     component: Candidates
@@ -68,11 +69,11 @@ const ROUTES = {
     component: Students
   },
 
-  results: {
-    label: 'Results',
-    icon: BarChart3,
-    permission: 'votes.read',
-    component: Results
+  'election-detail': {
+    label: 'Election Detail',
+    icon: ScrollText,
+    permission: 'elections.read',
+    component: ElectionDetail
   }
 };
 
@@ -81,16 +82,14 @@ const ROLE_ROUTES = {
     'dashboard',
     'elections',
     'candidates',
-    'students',
-    'results'
+    'students'
   ],
 
   facilitator: [
     'dashboard',
     'elections',
     'candidates',
-    'students',
-    'results'
+    'students'
   ],
 
   student: [
@@ -107,9 +106,24 @@ const ROLE_ROUTES = {
 function App() {
   const [authState, setAuthState] = useState(authStore.getState());
   const [activeView, setActiveView] = useState('dashboard');
+  const [authPage, setAuthPage] = useState('login');
+  const [resetParams, setResetParams] = useState(null);
+  const [selectedElectionId, setSelectedElectionId] = useState(null);
 
   useEffect(() => {
     return authStore.subscribe(setAuthState);
+  }, []);
+
+  useEffect(() => {
+    // Check URL for password reset parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('uid');
+    const token = urlParams.get('token');
+    
+    if (uid && token) {
+      setResetParams({ uid, token });
+      setAuthPage('reset');
+    }
   }, []);
 
   const user = useMemo(() => {
@@ -167,13 +181,59 @@ function App() {
   }
 
   /* ---------------------------------------------------------------------- */
+  /* AUTH PAGE HANDLERS */
+  /* ---------------------------------------------------------------------- */
+
+  function handleForgotPassword() {
+    setAuthPage('forgot');
+  }
+
+  function handleBackToLogin() {
+    setAuthPage('login');
+    setResetParams(null);
+    // Clear URL parameters
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  function handleResetComplete() {
+    setAuthPage('login');
+    setResetParams(null);
+    // Clear URL parameters
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  /* ELECTION DETAIL HANDLERS */
+
+  function handleViewElection(election) {
+    setSelectedElectionId(election.id);
+    setActiveView('election-detail');
+  }
+
+  /* ---------------------------------------------------------------------- */
   /* LOGIN */
   /* ---------------------------------------------------------------------- */
 
   if (!authState.token) {
+    if (authPage === 'forgot') {
+      return (
+        <ForgotPasswordPage onBack={handleBackToLogin} />
+      );
+    }
+    
+    if (authPage === 'reset' && resetParams) {
+      return (
+        <ResetPasswordPage
+          uid={resetParams.uid}
+          token={resetParams.token}
+          onResetComplete={handleResetComplete}
+        />
+      );
+    }
+    
     return (
       <Login
         onAuthenticated={() => setActiveView('dashboard')}
+        onForgotPassword={handleForgotPassword}
       />
     );
   }
@@ -321,7 +381,12 @@ function App() {
               onNavigate={navigate}
             />
           ) : ActiveComponent ? (
-            <ActiveComponent user={user} />
+            <ActiveComponent 
+              user={user}
+              onViewElection={handleViewElection}
+              electionId={selectedElectionId}
+              onBack={() => setActiveView('elections')}
+            />
           ) : null}
 
         </div>
@@ -332,8 +397,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+export default App;

@@ -68,56 +68,56 @@ export const MODULES = {
 
   students: {
     label: 'Students',
-    endpoint: '/api/v1/student/records/',
+    endpoint: '/student/records/',
     permissionModule: 'students',
     primaryPermission: 'students.read'
   },
 
   facilitators: {
     label: 'Facilitators',
-    endpoint: '/api/v1/auth/profiles/school_staff/',
+    endpoint: '/auth/profiles/school_staff/',
     permissionModule: 'facilitators',
     primaryPermission: 'facilitators.read'
   },
 
   elections: {
     label: 'Elections',
-    endpoint: '/api/v1/election/elections/',
+    endpoint: '/election/elections/',
     permissionModule: 'elections',
     primaryPermission: 'elections.read'
   },
 
   partylists: {
     label: 'Partylists',
-    endpoint: '/api/v1/election/partylists/',
+    endpoint: '/election/partylists/',
     permissionModule: 'partylists',
     primaryPermission: 'partylists.read'
   },
 
   candidates: {
-    label: 'Candidates',
-    endpoint: '/api/v1/election/candidates/',
+    label: 'Party Lists',
+    endpoint: '/election/candidates/',
     permissionModule: 'candidates',
     primaryPermission: 'candidates.read'
   },
 
   votes: {
     label: 'Votes',
-    endpoint: '/api/v1/election/votes/',
+    endpoint: '/election/votes/',
     permissionModule: 'votes',
     primaryPermission: 'votes.read'
   },
 
   courses: {
     label: 'Courses',
-    endpoint: '/api/v1/courses/',
+    endpoint: '/courses/',
     permissionModule: 'courses',
     primaryPermission: 'courses.read'
   },
 
   departments: {
     label: 'Departments',
-    endpoint: '/api/v1/departments/',
+    endpoint: '/departments/',
     permissionModule: 'departments',
     primaryPermission: 'departments.read'
   }

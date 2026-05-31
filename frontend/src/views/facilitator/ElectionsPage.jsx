@@ -4,8 +4,9 @@ import { Calendar, Clock, ChevronRight, Plus, X } from 'lucide-react'
 
 import apiClient from '../../api/apiClient'
 import { authStore } from '../../state/authStore.js'
+import NotificationModal from '../../components/ui/NotificationModal.jsx'
 
-export default function ElectionsPage() {
+export default function ElectionsPage({ onViewElection }) {
   const [elections, setElections] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -16,6 +17,15 @@ export default function ElectionsPage() {
     end_datetime: ''
   })
   const [submitting, setSubmitting] = useState(false)
+  const [notification, setNotification] = useState({ isOpen: false, title: '', message: '', type: 'info' })
+
+  const showNotification = (title, message, type = 'info') => {
+    setNotification({ isOpen: true, title, message, type })
+  }
+
+  const closeNotification = () => {
+    setNotification({ isOpen: false, title: '', message: '', type: 'info' })
+  }
   const userRole = authStore.getRole()
   const isStudent = userRole === 'student'
 
@@ -26,7 +36,7 @@ export default function ElectionsPage() {
   async function loadElections() {
     try {
       setLoading(true)
-      const response = await apiClient.get('/api/v1/election/elections/')
+      const response = await apiClient.get('/election/elections/')
       setElections(response.data || [])
     } catch (error) {
       console.error('Error loading elections:', error)
@@ -56,15 +66,15 @@ export default function ElectionsPage() {
         start_datetime: formatToISO(createForm.start_datetime),
         end_datetime: formatToISO(createForm.end_datetime)
       }
-      await apiClient.post('/api/v1/election/elections/', payload)
+      await apiClient.post('/election/elections/', payload)
       setShowCreateModal(false)
       setCreateForm({ name: '', description: '', start_datetime: '', end_datetime: '' })
-      alert('Election created successfully!')
+      showNotification('Success', 'Election created successfully!', 'success')
       loadElections()
     } catch (error) {
       console.error('Error creating election:', error)
       const errorMessage = error.message || error.response?.data?.detail || error.response?.data || 'Failed to create election'
-      alert(errorMessage)
+      showNotification('Error', errorMessage, 'error')
     } finally {
       setSubmitting(false)
     }
@@ -90,18 +100,19 @@ export default function ElectionsPage() {
   }
 
   return (
-    <div className="page-stack">
-      <div className="page-header">
-        <div>
-          <h1>Elections</h1>
-          <p>View and participate in upcoming elections</p>
-        </div>
-        {!isStudent && (
-          <button
-            className="create-election-btn"
-            onClick={() => setShowCreateModal(true)}
-          >
-            <Plus size={18} />
+    <>
+      <div className="page-stack">
+        <div className="page-header">
+          <div>
+            <h1>Elections</h1>
+            <p>View and participate in upcoming elections</p>
+          </div>
+          {!isStudent && (
+            <button
+              className="create-election-btn"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <Plus size={18} />
             Create Election
           </button>
         )}
@@ -117,6 +128,7 @@ export default function ElectionsPage() {
             <div
               key={election.id}
               className="election-card"
+              onClick={() => onViewElection && onViewElection(election)}
             >
               <div className="election-card-header">
                 <div className={`election-status ${getStatusColor(election.status)}`}>
@@ -214,5 +226,14 @@ export default function ElectionsPage() {
         </div>
       )}
     </div>
-  )
+
+    <NotificationModal
+      isOpen={notification.isOpen}
+      onClose={closeNotification}
+      title={notification.title}
+      message={notification.message}
+      type={notification.type}
+    />
+    </>
+  );
 }

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { authStore } from '../state/authStore.js';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
@@ -7,7 +8,7 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = authStore.getToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   
   // Remove Content-Type for FormData to let Axios set it automatically with boundary
@@ -27,10 +28,9 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = authStore.getRefreshToken();
         if (!refreshToken) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
+          authStore.clearAuth();
           return Promise.reject(err);
         }
 
@@ -41,13 +41,12 @@ apiClient.interceptors.response.use(
         );
 
         if (response.data.access) {
-          localStorage.setItem('token', response.data.access);
+          authStore.setToken(response.data.access);
           originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        authStore.clearAuth();
         return Promise.reject(refreshError);
       }
     }

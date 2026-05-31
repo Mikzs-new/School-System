@@ -8,14 +8,10 @@ import {
 
 import { login } from '../../api/auth.js';
 
-import ForgotPasswordPage from './ForgotPasswordPage.jsx';
-
 export default function LoginPage({
-  onAuthenticated
+  onAuthenticated,
+  onForgotPassword
 }) {
-
-  const [page, setPage] =
-    useState('login');
 
   const [form, setForm] =
     useState({
@@ -29,19 +25,6 @@ export default function LoginPage({
   const [isSubmitting,
     setIsSubmitting] =
     useState(false);
-
-  /* PAGE SWITCH */
-
-  if (page === 'forgot') {
-
-    return (
-      <ForgotPasswordPage
-        onBack={() =>
-          setPage('login')
-        }
-      />
-    );
-  }
 
   /* INPUT */
 
@@ -204,9 +187,7 @@ export default function LoginPage({
             <button
               type="button"
               className="forgot-link"
-              onClick={() =>
-                setPage('forgot')
-              }
+              onClick={onForgotPassword}
             >
               Forgot Password?
             </button>

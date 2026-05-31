@@ -45,7 +45,7 @@ function FacilitatorLayout({ children, onLogout }) {
           <button
             className="px-4 py-3 rounded-xl hover:bg-blue-600/20 transition text-left"
           >
-            Candidates
+            Party Lists
           </button>
 
 

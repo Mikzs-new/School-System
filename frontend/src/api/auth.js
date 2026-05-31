@@ -2,11 +2,12 @@
  * src/api/auth.js
  *
  * Login / logout helpers.
- * Token endpoint: POST /api/v1/auth/login/
+ * Token endpoint: POST /auth/login/
  * Returns: { access, refresh }
  */
 
 import apiClient from './apiClient.js';
+import { authStore } from '../state/authStore.js';
 
 function decodeJwt(token) {
   try {
@@ -52,10 +53,13 @@ export async function login({ username, password }) {
     localStorage.setItem('refreshToken', res.data.refresh);
   }
   
+  authStore.setAuth(auth);
+  
   return auth;
 }
 
 export function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
+  authStore.clearAuth();
 }

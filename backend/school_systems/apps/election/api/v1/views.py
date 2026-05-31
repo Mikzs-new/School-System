@@ -200,12 +200,16 @@ class ElectionViewSet(viewsets.ModelViewSet):
         if election.status != ElectionStatus.ENDED:
             raise ValidationError('Election results are not available yet')
         
-        try:
-            snapshot = ElectionAnalyticsSnapshot.objects.get(election=election)
-            serializer = ElectionResultSerializer(snapshot)
-            return Response(serializer.data)
-        except ElectionAnalyticsSnapshot.DoesNotExist:
-            raise ValidationError('Election results have not been generated yet')
+        snapshot = ElectionAnalyticsSnapshot.objects.filter(
+            election=election
+        ).first()
+
+        if not snapshot:
+            raise ValidationError(
+                'Election analytics snapshot does not exist.'
+            )
+        serializer = ElectionResultSerializer(snapshot)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def students(self, request, pk=None):

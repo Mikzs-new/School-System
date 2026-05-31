@@ -9,6 +9,7 @@ import {
 import { useEffect, useState } from "react";
 
 import apiClient from "../../api/apiClient";
+import NotificationModal from "../../components/ui/NotificationModal.jsx";
 
 export default function Students() {
 
@@ -23,6 +24,16 @@ export default function Students() {
 
   const [showModal, setShowModal] =
     useState(false);
+
+  const [notification, setNotification] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+
+  const showNotification = (title, message, type = 'info') => {
+    setNotification({ isOpen: true, title, message, type });
+  };
+
+  const closeNotification = () => {
+    setNotification({ isOpen: false, title: '', message: '', type: 'info' });
+  };
 
   const [formData, setFormData] =
     useState({
@@ -48,7 +59,7 @@ export default function Students() {
 
       const response =
         await apiClient.get(
-          "/api/v1/student/records/"
+          "/student/records/"
         );
 
       setStudents(
@@ -74,7 +85,7 @@ export default function Students() {
 
       const response =
         await apiClient.get(
-          "/api/v1/school/courses/"
+          "/school/courses/"
         );
 
       setCourses(
@@ -108,7 +119,7 @@ export default function Students() {
       );
 
       await apiClient.post(
-        "/api/v1/student/import-csv/",
+        "/student/import-csv/",
         form,
         {
           headers: {
@@ -120,17 +131,13 @@ export default function Students() {
 
       await fetchStudents();
 
-      alert(
-        "CSV imported successfully"
-      );
+      showNotification('Success', 'CSV imported successfully', 'success');
 
     } catch (error) {
 
       console.error(error);
 
-      alert(
-        "CSV import failed"
-      );
+      showNotification('Error', 'CSV import failed', 'error');
     }
   }
 
@@ -144,9 +151,7 @@ export default function Students() {
         !formData.first_name.trim()
       ) {
 
-        alert(
-          "First name is required"
-        );
+        showNotification('Validation Error', 'First name is required', 'warning');
 
         return;
       }
@@ -155,9 +160,7 @@ export default function Students() {
         !formData.last_name.trim()
       ) {
 
-        alert(
-          "Last name is required"
-        );
+        showNotification('Validation Error', 'Last name is required', 'warning');
 
         return;
       }
@@ -166,18 +169,14 @@ export default function Students() {
         !formData.school_student_id.trim()
       ) {
 
-        alert(
-          "Student ID is required"
-        );
+        showNotification('Validation Error', 'Student ID is required', 'warning');
 
         return;
       }
 
       if (!formData.course) {
 
-        alert(
-          "Please select a course"
-        );
+        showNotification('Validation Error', 'Please select a course', 'warning');
 
         return;
       }
@@ -210,7 +209,7 @@ export default function Students() {
 
       const response =
         await apiClient.post(
-          "/api/v1/student/records/",
+          "/student/records/",
           payload
         );
 
@@ -219,9 +218,7 @@ export default function Students() {
         response.data
       );
 
-      alert(
-        "Student added successfully"
-      );
+      showNotification('Success', 'Student added successfully', 'success');
 
       await fetchStudents();
 
@@ -263,27 +260,18 @@ export default function Students() {
 
       if (backendError) {
 
-        alert(
-          JSON.stringify(
-            backendError,
-            null,
-            2
-          )
-        );
+        showNotification('Error', JSON.stringify(backendError, null, 2), 'error');
 
       } else {
 
-        alert(
-          error.message ||
-          "Failed to add student"
-        );
+        showNotification('Error', error?.message || "Failed to add student", 'error');
       }
     }
   }
 
   return (
-
-    <div className="student-workspace">
+    <>
+      <div className="student-workspace">
 
       {/* HERO */}
 
@@ -602,5 +590,14 @@ export default function Students() {
       )}
 
     </div>
+
+    <NotificationModal
+      isOpen={notification.isOpen}
+      onClose={closeNotification}
+      title={notification.title}
+      message={notification.message}
+      type={notification.type}
+    />
+    </>
   );
 }

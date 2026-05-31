@@ -1,191 +1,104 @@
-import { useState } from "react"
+import { useState } from "react";
 
-import apiClient from "../../api/apiClient"
+import apiClient from "../../api/apiClient.js";
 
-import AuthLayout from "../../components/layout/AuthLayout"
+export default function ResetPasswordPage({ uid, token, onResetComplete }) {
 
-
-
-function ResetPasswordPage({ uid, token, onResetComplete }) {
-
-
-
-  const [formData, setFormData] = useState({
-    password: "",
-    confirmPassword: "",
-  })
-
-
-
-  const [loading, setLoading] =
-    useState(false)
-
-  const [error, setError] =
-    useState("")
-
-  const [success, setSuccess] =
-    useState("")
-
-
-
-  const handleChange = (event) => {
-    const { name, value } = event.target
-
-    setFormData((previousData) => ({
-      ...previousData,
-      [name]: value,
-    }))
-  }
-
-
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
-    setError("")
-    setSuccess("")
-
-
-
-    if (
-      formData.password !==
-      formData.confirmPassword
-    ) {
-      setError("Passwords do not match")
-
-      return
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
     }
-
-
 
     try {
-      setLoading(true)
+      const response = await apiClient.post('/auth/reset_password/', {
+        uid,
+        token,
+        password
+      });
 
-      const response = await apiClient.post(
-        "/auth/reset_password/",
-        {
-          uid,
-          token,
-          password: formData.password,
-        }
-      )
-
-
-
-      setSuccess(
-        response.data.message
-      )
-
-
+      setSuccess(response.data.message || "Password changed successfully");
 
       setTimeout(() => {
-        onResetComplete()
-      }, 2000)
-    }
-
-    catch (error) {
-      console.error(error)
-
+        onResetComplete();
+      }, 2000);
+    } catch (err) {
+      console.error(err);
       setError(
-        error.response?.data?.detail ||
-        error.response?.data?.non_field_errors?.[0] ||
+        err.response?.data?.detail ||
+        err.response?.data?.error ||
+        err.message ||
         "Unable to reset password"
-      )
+      );
+    } finally {
+      setLoading(false);
     }
-
-    finally {
-      setLoading(false)
-    }
-  }
-
-
+  };
 
   return (
-    <AuthLayout>
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-2xl shadow-2xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            Reset Password
-          </h1>
-
-          <p className="text-zinc-400 mt-2">
-            Enter your new password
-          </p>
+    <div className="forgot-wrapper">
+      <div className="forgot-card">
+        <div className="forgot-header">
+          <h1>Reset Password</h1>
+          <p>Enter your new password</p>
         </div>
 
-
-
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
-          <div>
-            <label className="block text-sm text-zinc-300 mb-2">
-              New Password
-            </label>
-
+        <form className="forgot-form" onSubmit={handleSubmit}>
+          <div className="forgot-group">
+            <label>New Password</label>
             <input
               type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter new password"
-              className="w-full bg-zinc-950 border border-zinc-700 text-white px-4 py-3 rounded-xl outline-none focus:border-blue-500"
+              required
             />
           </div>
 
-
-
-          <div>
-            <label className="block text-sm text-zinc-300 mb-2">
-              Confirm Password
-            </label>
-
+          <div className="forgot-group">
+            <label>Confirm Password</label>
             <input
               type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm new password"
-              className="w-full bg-zinc-950 border border-zinc-700 text-white px-4 py-3 rounded-xl outline-none focus:border-blue-500"
+              required
             />
           </div>
-
-
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm">
+            <div className="error-message">
               {error}
             </div>
           )}
 
-
-
           {success && (
-            <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-xl text-sm">
+            <div className="success-message">
               {success}
             </div>
           )}
 
-
-
           <button
             type="submit"
+            className="forgot-submit-btn"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-3 rounded-xl font-semibold transition"
           >
-            {
-              loading
-                ? "Resetting..."
-                : "Reset Password"
-            }
+            {loading ? "Resetting..." : "Reset Password"}
           </button>
         </form>
       </div>
-    </AuthLayout>
-  )
+    </div>
+  );
 }
-
-
-
-export default ResetPasswordPage
