@@ -78,12 +78,15 @@ class LoginAPIView(APIView):
         role = None
 
         if hasattr(user, 'school_staff_profile'):
+            full_name = user.school_staff_profile.full_name
             role = "school_staff"
 
         elif hasattr(user, 'student_profile'):
+            full_name = user.student_profile.full_name
             role = "student"
 
         elif user.is_staff:
+            full_name = None
             role = "admin"
 
 
@@ -92,6 +95,7 @@ class LoginAPIView(APIView):
                 'access': str(refresh.access_token), 
                 'refresh': str(refresh), 
                 'role':role,
+                'full_name': full_name
              }, 
             status=status.HTTP_200_OK
         )

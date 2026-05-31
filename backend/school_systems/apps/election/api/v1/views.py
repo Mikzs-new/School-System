@@ -184,6 +184,9 @@ class ElectionViewSet(viewsets.ModelViewSet):
         
         user = request.user
 
+        if not hasattr(user, 'school_staff_profile'):
+            raise ValidationError('No permission to access')
+
         election.status = ElectionStatus.ACTIVE
         election.save(update_fields=['status'])
         

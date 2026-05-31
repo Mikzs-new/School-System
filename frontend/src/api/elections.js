@@ -32,6 +32,16 @@ export const getElection = async (electionId) => {
   return response.data;
 };
 
+export const startElection = async (electionId) => {
+  const response = await apiClient.post(`/election/elections/${electionId}/start_election/`);
+  return response.data;
+};
+
+export const endElection = async (electionId) => {
+  const response = await apiClient.post(`/election/elections/${electionId}/end_election/`);
+  return response.data;
+};
+
 // Nested Election Endpoints
 export const getElectionPositions = async (electionId) => {
   const response = await apiClient.get(`/election/elections/${electionId}/positions/`);
@@ -75,6 +85,11 @@ export const createElectionYearLevel = async (electionId, formData) => {
 
 export const submitVote = async (electionId, payload) => {
   const response = await apiClient.post(`/election/elections/${electionId}/vote/`, payload);
+  return response.data;
+};
+
+export const getVotingBallot = async (electionId) => {
+  const response = await apiClient.get(`/election/elections/${electionId}/vote/`);
   return response.data;
 };
 

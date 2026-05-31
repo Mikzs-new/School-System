@@ -270,7 +270,7 @@ export default function Students() {
   }
 
   return (
-    <>
+    <div className="students-wrapper">
       <div className="student-workspace">
 
       {/* HERO */}
@@ -598,6 +598,6 @@ export default function Students() {
       message={notification.message}
       type={notification.type}
     />
-    </>
+    </div>
   );
 }

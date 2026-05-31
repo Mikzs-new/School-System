@@ -2,7 +2,9 @@ import React from 'react';
 import { hasPermission } from '../../state/permissionGuard.js';
 
 export default function DashboardPage({ routes, user, visibleRouteKeys, onNavigate }) {
-  const displayName = user?.name || user?.full_name || user?.username || 'Voter';
+  const displayName = user?.full_name || [user?.first_name, user?.last_name]
+    .filter(Boolean)
+    .join(' ') || user?.username || 'User';
   const availableRoutes = visibleRouteKeys.filter((routeKey) => routeKey !== 'dashboard' && routes[routeKey]);
   const canUseOperations = user?.role === 'admin' || user?.role === 'facilitator';
   const roleLabel = user?.role === 'facilitator' ? 'Facilitator' : user?.role || 'Student';

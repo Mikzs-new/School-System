@@ -100,7 +100,7 @@ export default function ElectionsPage({ onViewElection }) {
   }
 
   return (
-    <>
+    <div className="elections-wrapper">
       <div className="page-stack">
         <div className="page-header">
           <div>
@@ -234,6 +234,6 @@ export default function ElectionsPage({ onViewElection }) {
       message={notification.message}
       type={notification.type}
     />
-    </>
+    </div>
   );
 }

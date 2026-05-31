@@ -115,12 +115,14 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Check URL for password reset parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const uid = urlParams.get('uid');
-    const token = urlParams.get('token');
+    // Check URL pathname for password reset parameters
+    // Expected format: /password_reset/:uid/:token/
+    const pathname = window.location.pathname;
+    const resetPattern = /^\/password_reset\/([^\/]+)\/([^\/]+)\/?$/;
+    const match = pathname.match(resetPattern);
     
-    if (uid && token) {
+    if (match) {
+      const [, uid, token] = match;
       setResetParams({ uid, token });
       setAuthPage('reset');
     }
@@ -134,9 +136,9 @@ function App() {
   const activeRoute = ROUTES[activeView] || ROUTES.dashboard;
   const ActiveComponent = activeRoute.component;
 
-  const userDisplayName = [user.first_name, user.last_name]
+  const userDisplayName = user.full_name || [user.first_name, user.last_name]
     .filter(Boolean)
-    .join(' ') || user.username || 'Voter';
+    .join(' ') || user.username || 'User';
 
   const roleLabel = user.role === 'facilitator' ? 'Facilitator' : user.role || 'Student';
 

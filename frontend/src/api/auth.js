@@ -33,6 +33,7 @@ async function normalizeAuth(data, inputUsername) {
 
   const user = {
     username: username,
+    full_name: data.full_name || null,
     first_name: payload.first_name,
     last_name: payload.last_name,
     email: payload.email,
@@ -41,7 +42,7 @@ async function normalizeAuth(data, inputUsername) {
     role: normalizeRole(data?.role || payload.role, payload)
   };
 
-  return { token, user, role: user.role };
+  return { token, user, role: user.role, refreshToken: data?.refresh };
 }
 
 export async function login({ username, password }) {
@@ -49,8 +50,8 @@ export async function login({ username, password }) {
   const auth = await normalizeAuth(res.data, username);
   
   localStorage.setItem('token', auth.token);
-  if (res.data.refresh) {
-    localStorage.setItem('refreshToken', res.data.refresh);
+  if (auth.refreshToken) {
+    localStorage.setItem('refreshToken', auth.refreshToken);
   }
   
   authStore.setAuth(auth);
