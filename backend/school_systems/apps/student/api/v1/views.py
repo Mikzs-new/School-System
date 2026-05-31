@@ -132,5 +132,11 @@ class BulkStudentCSVViewset(viewsets.GenericViewSet, mixins.CreateModelMixin):
         FormParser,
     ]
     def create(self, request):
-        result = StudentImportService.import_students_csv(file=request.FILES['file'],school_staff_profile=request.user.school_staff_profile)
+        file = request.FILES.get('file')
+        if not file:
+            return Response(
+                {'detail': 'CSV file is required'},
+                status=status.HTTP_400_BAD_REQUEST
+        )
+        result = StudentImportService.import_students_csv(file=file,school_staff_profile=request.user.school_staff_profile)
         return Response(result,status=status.HTTP_200_OK)

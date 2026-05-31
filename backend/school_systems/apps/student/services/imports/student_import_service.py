@@ -35,12 +35,12 @@ class StudentImportService:
         student_infos_to_create = []
         seen_student_ids = set()
         
+        school = school_staff_profile.school
+
         courses = {
             c.name.strip().lower(): c.id
             for c in Course.objects.filter(school=school)
         }
-
-        school = school_staff_profile.school
 
         group = get_student_group()
 
@@ -71,6 +71,9 @@ class StudentImportService:
 
             row['course'] = courses[course]
 
+            row['school_student_id'] = row.pop('student_id')
+            row['year_level'] = row.pop('year')
+
             serializer = StudentCreateSerializer(data=row,school=school)
 
             if not serializer.is_valid():
@@ -99,7 +102,6 @@ class StudentImportService:
                     user = create_user(
                         username=username,
                         email=validated['email'],
-                        school=school,
                         group=group
                     )
                 except serializers.ValidationError as e:
