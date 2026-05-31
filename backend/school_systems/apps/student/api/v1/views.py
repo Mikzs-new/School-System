@@ -137,6 +137,6 @@ class BulkStudentCSVViewset(viewsets.GenericViewSet, mixins.CreateModelMixin):
             return Response(
                 {'detail': 'CSV file is required'},
                 status=status.HTTP_400_BAD_REQUEST
-        )
-        result = StudentImportService.import_students_csv(file=file,school_staff_profile=request.user.school_staff_profile)
-        return Response(result,status=status.HTTP_200_OK)
+            )
+        result = StudentImportService.import_students_csv(file=file, school_staff_profile=request.user.school_staff_profile)
+        return Response(result, status=status.HTTP_200_OK)

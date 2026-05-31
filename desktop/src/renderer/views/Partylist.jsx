@@ -4,8 +4,12 @@ import React, {
 } from 'react'
 
 import api from '../api/apiClient'
+import { authStore } from '../state/authStore.js'
 
 export default function Partylists() {
+
+  const userRole = authStore.getRole()
+  const isStudent = userRole === 'student'
 
   const [partylists, setPartylists] =
     useState([])
@@ -111,41 +115,43 @@ export default function Partylists() {
 
       </div>
 
-      <form
-        className="card-form"
-        onSubmit={handleSubmit}
-      >
+      {!isStudent && (
+        <form
+          className="card-form"
+          onSubmit={handleSubmit}
+        >
 
-        <input
-          type="text"
-          placeholder="Partylist Name"
-          value={formData.name}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              name: e.target.value
-            })
-          }
-        />
+          <input
+            type="text"
+            placeholder="Partylist Name"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                name: e.target.value
+              })
+            }
+          />
 
-        <textarea
-          className="modern-textarea"
-          placeholder="Description"
-          value={formData.description}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              description:
-                e.target.value
-            })
-          }
-        />
+          <textarea
+            className="modern-textarea"
+            placeholder="Description"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                description:
+                  e.target.value
+              })
+            }
+          />
 
-        <button type="submit">
-          Add Partylist
-        </button>
+          <button type="submit">
+            Add Partylist
+          </button>
 
-      </form>
+        </form>
+      )}
 
       <div className="data-panel">
 
