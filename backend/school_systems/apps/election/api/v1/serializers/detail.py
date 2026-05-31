@@ -6,6 +6,7 @@ from apps.election.models.candidate import Candidate
 from apps.election.models.eligibility import ElectionEligiblePosition
 from apps.election.models.election import Election
 from apps.election.models.vote import Vote
+from apps.student.models import StudentEnrollment
 
 from apps.analytics.models import ElectionAnalyticsSnapshot, CandidateAnalyticsSnapshot
 
@@ -37,9 +38,11 @@ class PartylistDetailSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Partylist
-        fields = ['name','description','elections']
+        fields = ['name','elections']
 
 class ElectionDetailSerializer(serializers.ModelSerializer):
+    has_voted = serializers.SerializerMethodField()
+
     positions = ElectionEligiblePositionListSerializer(many=True, read_only=True)
     valid_courses = ElectionEligibleCourseSerializer(many=True, read_only=True)
     valid_year_levels = ElectionEligibleYearLevelSerializer(many=True, read_only=True)
@@ -49,7 +52,26 @@ class ElectionDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Election
-        fields = ['id','name','description','status','school_year','start_datetime','end_datetime','valid_courses','valid_year_levels','positions','partylists','candidates']
+        fields = ['id','name','description','status','school_year','start_datetime','end_datetime','valid_courses','valid_year_levels','positions','partylists','candidates','has_voted']
+
+    def get_has_voted(self, obj):
+        request = self.context.get('request')
+
+        if not request:
+            return False
+
+        user = request.user
+
+        if not hasattr(user, 'student_profile'):
+            return None
+
+        student = StudentEnrollment.objects.get(school_year=obj.school_year,student=user.student_profile)
+
+        return Vote.objects.filter(
+            election=obj,
+            student_enrollment=student
+        ).exists()
+
 
 class ElectionResultSerializer(serializers.ModelSerializer):
     candidate_results = serializers.SerializerMethodField()

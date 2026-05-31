@@ -150,7 +150,6 @@ class StudentImportService:
             for s in created_students
         }
 
-
         for sid,data in created_student_data.items():
             student = student_map[sid]
 

@@ -105,7 +105,7 @@ class ElectionViewSet(viewsets.ModelViewSet):
             return ElectionListSerializer
 
         return ElectionListSerializer
-    
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
             data=request.data
