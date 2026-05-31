@@ -99,7 +99,7 @@ class ElectionService:
 
     @staticmethod
     @transaction.atomic
-    def create_eligible_partylist(*,school_staff_profile,description,partylist,election):
+    def create_eligible_partylist(*,school_staff_profile,description='',partylist,election):
 
         if election.school_year.school != partylist.school or school_staff_profile.school != partylist.school  or school_staff_profile.school != election.school_year.school:
             raise ValidationError('Cannot modify another school election')
@@ -120,7 +120,7 @@ class ElectionService:
         
     @staticmethod
     @transaction.atomic
-    def generate_snapshot(schooL_staff_profile,election):
+    def generate_snapshot(school_staff_profile,election):
         election.status = ElectionStatus.ENDED
         election.save()
         school_year = election.school_year
@@ -155,25 +155,20 @@ class ElectionService:
 
         for position in positions:
 
-            position_candidates = [
-                c for c in candidates
-                if c.position_id == position.id
-            ]
-
             position_candidates = candidates.filter(
                 position=position
             ).order_by('-total_votes')
 
-            # total_position_votes = sum(
-            #     c.total_votes
-            #     for c in position_candidates
-            # )
+            total_position_votes = sum(
+                c.total_votes
+                for c in position_candidates
+            )
 
             ranking = 1
 
             for candidate in position_candidates:
-                if total_votes > 0:
-                    percentage = candidate.total_votes / total_votes * 100
+                if total_position_votes > 0:
+                    percentage = candidate.total_votes / total_position_votes * 100
                 else:
                     percentage = 0
                 candidate_analytics_create.append(

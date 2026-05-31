@@ -44,11 +44,25 @@ export default function Elections({
     e.preventDefault()
     setSubmitting(true)
     try {
+      // Convert local datetime to ISO string for backend (preserving local time)
+      const formatToISO = (localDateTime) => {
+        if (!localDateTime) return null
+        const date = new Date(localDateTime)
+        // Get the date components in local timezone
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        // Return ISO string without timezone conversion
+        return `${year}-${month}-${day}T${hours}:${minutes}:00`
+      }
+      
       const payload = {
         name: createForm.name,
         description: createForm.description || '',
-        start_datetime: createForm.start_datetime,
-        end_datetime: createForm.end_datetime
+        start_datetime: formatToISO(createForm.start_datetime),
+        end_datetime: formatToISO(createForm.end_datetime)
       }
       await api.post('/api/v1/election/elections/', payload)
       setShowCreateModal(false)
@@ -75,7 +89,8 @@ export default function Elections({
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'ENABLED': return 'status-enabled'
+      case 'ACTIVE': return 'status-enabled'
+      case 'SCHEDULED': return 'status-scheduled'
       case 'DRAFTED': return 'status-drafted'
       case 'ENDED': return 'status-ended'
       default: return 'status-drafted'
