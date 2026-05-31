@@ -10,17 +10,18 @@ const STORAGE_KEY = 'school-voting-auth';
 function readStored() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { token: null, user: null, role: null, notice: '' };
+    if (!raw) return { token: null, refreshToken: null, user: null, role: null, notice: '' };
     const parsed = JSON.parse(raw);
     const role = parsed.role || parsed.user?.role || null;
     return {
       token: parsed.token || null,
+      refreshToken: parsed.refreshToken || null,
       role,
       user: parsed.user ? { ...parsed.user, role } : null,
       notice: parsed.notice || ''
     };
   } catch {
-    return { token: null, user: null, role: null, notice: '' };
+    return { token: null, refreshToken: null, user: null, role: null, notice: '' };
   }
 }
 
@@ -49,11 +50,14 @@ function notify() {
 export const authStore = {
   getState: () => state,
   getToken: () => state.token,
+  getRefreshToken: () => state.refreshToken,
+  getRole: () => state.role,
 
-  setAuth({ token, user, role }) {
+  setAuth({ token, user, role, refreshToken }) {
     const nextRole = inferRole(user, role);
     state = {
       token,
+      refreshToken,
       role: nextRole,
       user: user ? { ...user, role: nextRole } : { role: nextRole },
       notice: ''
@@ -75,7 +79,13 @@ export const authStore = {
   },
 
   clearAuth() {
-    state = { token: null, user: null, role: null, notice: '' };
+    state = { token: null, refreshToken: null, user: null, role: null, notice: '' };
+    persist(state);
+    notify();
+  },
+
+  setToken(token) {
+    state = { ...state, token };
     persist(state);
     notify();
   },
