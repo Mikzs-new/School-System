@@ -22,12 +22,14 @@ class Candidate(TimeStampedModel):
     position = models.ForeignKey(
         ElectionEligiblePosition,
         on_delete=models.CASCADE,
+        related_name='candidates'
     )
     partylist = models.ForeignKey(
         PartylistElection,
         on_delete=models.CASCADE,
         related_name='candidates',
-        null=True
+        null=True,
+        blank=True
     )
     # added_by = models.ForeignKey(
     #     Facilitator,
