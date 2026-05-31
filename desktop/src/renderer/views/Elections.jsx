@@ -6,6 +6,8 @@ import api from '../api/apiClient'
 import { authStore } from '../state/authStore.js'
 
 import ElectionDetail from './ElectionDetail.jsx'
+import ElectionResultsModal from './ElectionResultsModal.jsx'
+import { formatUtcDateOnly, localDateTimeToUtc } from '../utils/dateUtils.js'
 
 export default function Elections({
   user
@@ -14,6 +16,8 @@ export default function Elections({
   const [elections, setElections] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showResultsModal, setShowResultsModal] = useState(false)
+  const [selectedResultsElection, setSelectedResultsElection] = useState(null)
   const [createForm, setCreateForm] = useState({
     name: '',
     description: '',
@@ -47,8 +51,8 @@ export default function Elections({
       const payload = {
         name: createForm.name,
         description: createForm.description || '',
-        start_datetime: createForm.start_datetime,
-        end_datetime: createForm.end_datetime
+        start_datetime: localDateTimeToUtc(createForm.start_datetime),
+        end_datetime: localDateTimeToUtc(createForm.end_datetime)
       }
       await api.post('/api/v1/election/elections/', payload)
       setShowCreateModal(false)
@@ -83,12 +87,7 @@ export default function Elections({
   }
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })
+    return formatUtcDateOnly(dateString)
   }
 
   return (
@@ -146,7 +145,38 @@ export default function Elections({
               </div>
               
               <div className="election-card-footer">
-                <span className="election-card-action">View Election</span>
+                <button
+                  className="election-card-action-btn"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedElection(election)
+                  }}
+                >
+                  View Election
+                </button>
+                {election.status === 'ENABLED' && isStudent && (
+                  <button
+                    className="election-card-action-btn vote-btn"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedElection(election)
+                    }}
+                  >
+                    Vote Now
+                  </button>
+                )}
+                {election.status === 'ENDED' && (
+                  <button
+                    className="election-card-action-btn results-btn"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedResultsElection(election)
+                      setShowResultsModal(true)
+                    }}
+                  >
+                    View Results
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -215,6 +245,16 @@ export default function Elections({
             </form>
           </div>
         </div>
+      )}
+
+      {showResultsModal && selectedResultsElection && (
+        <ElectionResultsModal
+          election={selectedResultsElection}
+          onClose={() => {
+            setShowResultsModal(false)
+            setSelectedResultsElection(null)
+          }}
+        />
       )}
     </div>
   )

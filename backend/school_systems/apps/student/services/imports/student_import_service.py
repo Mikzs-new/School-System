@@ -35,12 +35,12 @@ class StudentImportService:
         student_infos_to_create = []
         seen_student_ids = set()
         
+        school = school_staff_profile.school
+
         courses = {
             c.name.strip().lower(): c.id
             for c in Course.objects.filter(school=school)
         }
-
-        school = school_staff_profile.school
 
         group = get_student_group()
 
@@ -95,10 +95,13 @@ class StudentImportService:
             if not existing_student:
                 username = f'{school.initials.lower()}_{sid}'
 
+                # Handle empty email - use username as fallback
+                email = validated.get('email') or f'{username}@temp.local'
+
                 try:
                     user = create_user(
                         username=username,
-                        email=validated['email'],
+                        email=email,
                         school=school,
                         group=group
                     )
@@ -127,9 +130,9 @@ class StudentImportService:
                     errors.append({'row': row_number, 'error': 'Student info already exists'})
                     continue
 
-                if validated['email'] != student.user.email:
+                # Handle empty email when updating
+                if validated.get('email') and validated['email'] != student.user.email:
                     student.user.email = validated['email']
-
                     users_to_update.append(student.user)
                 
                 student_info = StudentEnrollment(

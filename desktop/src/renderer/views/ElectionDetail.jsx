@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react'
 
 import api from '../api/apiClient'
 import { authStore } from '../state/authStore.js'
+import { formatUtcDateTime, utcToLocalDateTime, localDateTimeToUtc } from '../utils/dateUtils.js'
 
 export default function ElectionDetail({
   election,
@@ -56,7 +57,7 @@ export default function ElectionDetail({
   const [courseForm, setCourseForm] = useState({ course: '' })
   const [yearForm, setYearForm] = useState({ year_level: '' })
   const [positionForm, setPositionForm] = useState({ title: '', seat_count: 1 })
-  const [partylistForm, setPartylistForm] = useState({ partylist: '' })
+  const [partylistForm, setPartylistForm] = useState({ partylist: '', description: '' })
   const [candidateForm, setCandidateForm] = useState({ student_enrollment: '', position: '', partylist: '' })
   const [updateTimeForm, setUpdateTimeForm] = useState({ start_datetime: '', end_datetime: '' })
 
@@ -209,7 +210,17 @@ export default function ElectionDetail({
       alert('Vote submitted successfully!')
     } catch (error) {
       console.error('Error submitting vote:', error)
-      alert(error.response?.data || 'Failed to submit vote')
+      console.error('Error response:', error.response)
+      console.error('Error data:', error.response?.data)
+      console.error('Error status:', error.response?.status)
+      
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.message || 
+                          error.response?.data?.error ||
+                          (typeof error.response?.data === 'string' ? error.response.data : null) ||
+                          error.message ||
+                          'Failed to submit vote'
+      alert(errorMessage)
     } finally {
       setSubmittingVote(false)
     }
@@ -255,8 +266,8 @@ export default function ElectionDetail({
     
     try {
       await api.patch(`/api/v1/election/elections/${election.id}/update_time/`, {
-        start_datetime: updateTimeForm.start_datetime,
-        end_datetime: updateTimeForm.end_datetime
+        start_datetime: localDateTimeToUtc(updateTimeForm.start_datetime),
+        end_datetime: localDateTimeToUtc(updateTimeForm.end_datetime)
       })
       alert('Election schedule updated successfully')
       setShowUpdateTimeModal(false)
@@ -271,8 +282,8 @@ export default function ElectionDetail({
   function openUpdateTimeModal() {
     if (details) {
       setUpdateTimeForm({
-        start_datetime: details.start_datetime || '',
-        end_datetime: details.end_datetime || ''
+        start_datetime: utcToLocalDateTime(details.start_datetime),
+        end_datetime: utcToLocalDateTime(details.end_datetime)
       })
     }
     setShowUpdateTimeModal(true)
@@ -330,11 +341,14 @@ export default function ElectionDetail({
   async function handleAddPartylist(e) {
     e.preventDefault()
     try {
-      const payload = { partylist: parseInt(partylistForm.partylist) }
+      const payload = { 
+        partylist: parseInt(partylistForm.partylist),
+        description: partylistForm.description
+      }
       await api.post(`/api/v1/election/elections/${election.id}/partylists/`, payload)
       alert('Partylist added successfully')
       setShowPartylistModal(false)
-      setPartylistForm({ partylist: '' })
+      setPartylistForm({ partylist: '', description: '' })
       loadPartylists()
       loadElectionDetails()
     } catch (error) {
@@ -497,13 +511,7 @@ export default function ElectionDetail({
               <div>
                 <span className="schedule-label">Starts</span>
                 <span className="schedule-value">
-                  {details.start_datetime ? new Date(details.start_datetime).toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  }) : 'Not set'}
+                  {formatUtcDateTime(details.start_datetime) || 'Not set'}
                 </span>
               </div>
             </div>
@@ -512,13 +520,7 @@ export default function ElectionDetail({
               <div>
                 <span className="schedule-label">Ends</span>
                 <span className="schedule-value">
-                  {details.end_datetime ? new Date(details.end_datetime).toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  }) : 'Not set'}
+                  {formatUtcDateTime(details.end_datetime) || 'Not set'}
                 </span>
               </div>
             </div>
@@ -1106,6 +1108,15 @@ export default function ElectionDetail({
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="form-group">
+                <label>Description (Optional)</label>
+                <input
+                  type="text"
+                  value={partylistForm.description}
+                  onChange={(e) => setPartylistForm({ ...partylistForm, description: e.target.value })}
+                  placeholder="Enter description for this partylist in the election"
+                />
               </div>
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowPartylistModal(false)}>

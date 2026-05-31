@@ -184,8 +184,6 @@ class ElectionViewSet(viewsets.ModelViewSet):
 
         election.status = ElectionStatus.ENABLED
         election.save(update_fields=['status'])
-        
-        Election.objects.filter(election=election).update(status=ElectionStatus.ENABLED)
 
         return Response({'message': 'Election started successfully'}, status=status.HTTP_200_OK)
 

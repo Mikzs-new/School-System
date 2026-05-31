@@ -4,6 +4,7 @@ from apps.election.models.election import Election
 from apps.election.models.candidate import Candidate
 from apps.election.models.eligibility import ElectionEligibleCourse, PartylistElection, ElectionEligiblePosition, ElectionEligibleYearLevel
 from apps.election.models.partylist import Partylist
+from django.utils import timezone
 
 class ElectionEligiblePositionCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,6 +41,14 @@ class ElectionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Election
         fields = ['name','description','start_datetime','end_datetime']
+    
+    def validate(self, attrs):
+        # Ensure datetimes are timezone-aware
+        if attrs.get('start_datetime') and attrs.get('start_datetime').tzinfo is None:
+            attrs['start_datetime'] = timezone.make_aware(attrs['start_datetime'])
+        if attrs.get('end_datetime') and attrs.get('end_datetime').tzinfo is None:
+            attrs['end_datetime'] = timezone.make_aware(attrs['end_datetime'])
+        return attrs
 
 class VoteItemInputSerialzer(serializers.Serializer):
     candidate = serializers.PrimaryKeyRelatedField(

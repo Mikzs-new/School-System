@@ -32,8 +32,8 @@ def validate_students_csv(file):
             
     except UnicodeDecodeError:
         raise serializers.ValidationError('CSV encoding invalid')
-    except  Exception:
-        raise serializers.ValidationError('Invalid CSV')
+    except  Exception as e:
+        raise serializers.ValidationError(f'Invalid CSV: {str(e)}')
     
     finally:
         file.seek(0)

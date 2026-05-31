@@ -2,7 +2,7 @@ from rest_framework.serializers import ValidationError
 
 from django.db.models import Q
 
-from apps.election.models import Election
+from apps.election.models.election import Election, ElectionStatus
 from apps.student.models import StudentEnrollment
 
 from shared.utils.helper.school import get_current_school_year
@@ -36,7 +36,8 @@ class ElectionSelector:
                     valid_year_levels__year_level=enrollment.year_level
                 )
 
-            return qs.filter(query).distinct()
+            status = [ElectionStatus.ENABLED, ElectionStatus.ENDED]
+            return qs.filter(query, status__in=status).distinct()
         
         return qs.none()
 

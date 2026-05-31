@@ -20,7 +20,7 @@ class StudentCreateSerializer(serializers.Serializer):
         queryset=Course.objects.none()
     )
     year_level = serializers.IntegerField(min_value=1)
-    email = serializers.EmailField()
+    email = serializers.EmailField(required=False, allow_blank=True)
 
     def __init__(self, *args, school=None, **kwargs):
         super().__init__(*args, **kwargs)
